@@ -1,6 +1,20 @@
 ## Description
 
+```mermaid
+flowchart TD
+    A[Mobile App]
+    B[Website]
+    C[NestJS REST Endpoints]
+    D[NestJS WebSocket Endpoints]
+    E[PostgreSQL Database]
 
+    A -->|HTTP Requests / WS| C
+    B -->|HTTP Requests / WS| C
+    C -->|Database queries| E
+    C -->|Publishes events| D
+    D -->|Pushes updates| A
+    D -->|Pushes updates| B
+```
 
 ## Node.js dependencies
 
