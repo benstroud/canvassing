@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Question } from './question.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -36,4 +37,10 @@ export class Answer {
   // (Optional) Define a relation to Address if you need to access the Address entity.
   @ManyToOne(() => Address, (address) => address.answers)
   address: Address; */
+}
+
+export class CreateAnswerCto {
+  questionId: number;
+  @ApiProperty({ description: 'The answer text' })
+  text: string;
 }

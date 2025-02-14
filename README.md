@@ -1,5 +1,7 @@
 ## Description
 
+<http://localhost:3000/api>
+
 ```mermaid
 flowchart TD
     A[Mobile App]
@@ -16,10 +18,23 @@ flowchart TD
     D -->|Pushes updates| B
 ```
 
-## Node.js dependencies
+## Steps I took setting up the project
 
 ```bash
-$ npm install
+node --version # v20.18.2
+npm --version # v10.8.2
+alias nest='npx @nestjs/cli@11.0.2'
+nest --version # 11.0.2
+
+nest new canvassing
+npm i
+npm install typeorm --save
+npm install reflect-metadata --save
+npm install @types/node --save-dev
+npm install pg --save
+npm install --save @nestjs/typeorm typeorm pg
+npm install -g @mermaid-js/mermaid-cli
+npm install --save @nestjs/swagger
 ```
 
 ## Development Environment
@@ -37,6 +52,7 @@ $ docker-compose up -d
 ### Loading demo data
 
 TODO: Describe steps to prepare and load demonstration data to the PostgreSQL db.
+
 
 ## Nest.js - Compile and run commands
 

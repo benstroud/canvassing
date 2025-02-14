@@ -4,11 +4,14 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { Questionnaire } from './questionnaire.entity';
 import { Answer } from './answer.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
+@Unique(['text', 'questionnaire'])
 export class Question {
   @PrimaryGeneratedColumn()
   id: number;
@@ -24,4 +27,10 @@ export class Question {
   // A Question can have one or more Answers.
   @OneToMany(() => Answer, (answer) => answer.question)
   answers: Answer[];
+}
+
+export class CreateQuestionDto {
+  questionnaireId: number;
+  @ApiProperty({ description: 'The question text' })
+  text: string;
 }

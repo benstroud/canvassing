@@ -6,6 +6,7 @@ import {
   Unique,
 } from 'typeorm';
 import { AddressList } from './addresslist.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 @Unique(['address1', 'zipcode'])
@@ -35,4 +36,17 @@ export class Address {
   /* // (Optional) Reverse relation if you want to access Answers related to this Address.
   @OneToMany(() => Answer, (answer) => answer.address)
   answers: Answer[]; */
+}
+
+export class CreateAddressDto {
+  @ApiProperty({ description: 'The first line of the address' })
+  address1: string;
+  @ApiProperty({ description: 'The second line of the address' })
+  address2: string;
+  @ApiProperty({ description: 'The city' })
+  city: string;
+  @ApiProperty({ description: 'The state' })
+  state: string;
+  @ApiProperty({ description: 'The ZIP code' })
+  zipcode: string;
 }
