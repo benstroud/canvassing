@@ -113,9 +113,9 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Canvassing <a href=\'/api\'>API</a>"', () => {
+    it('should return welcome with links"', () => {
       expect(appController.getHello()).toBe(
-        "Canvassing <a href='/api'>API</a>",
+        "Welcome to the Canvassing backend.<br><a href='/api'>REST OpenAPI Swagger UI</a><br><a href='/graphql'>GraphQL API Playground</a>",
       );
     });
   });

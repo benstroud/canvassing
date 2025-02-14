@@ -1,18 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Question } from './question.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @Entity()
+@ObjectType()
 export class Answer {
   @PrimaryGeneratedColumn()
+  @Field(() => ID)
   id: number;
 
   // Free form text for the answer verbiage.
   @Column('text')
+  @Field()
   text: string;
 
   // Link back to the Question.
   @ManyToOne(() => Question, (question) => question.answers)
+  @Field(() => Question)
   question: Question;
 
   /* @Column()

@@ -27,7 +27,7 @@ export class AppController {
 
   @Get('')
   getHello(): string {
-    return "Canvassing <a href='/api'>API</a>";
+    return "Welcome to the Canvassing backend.<br><a href='/api'>REST OpenAPI Swagger UI</a><br><a href='/graphql'>GraphQL API Playground</a>";
   }
 
   @Get('partner/organization')

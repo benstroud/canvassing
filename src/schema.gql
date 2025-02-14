@@ -1,0 +1,54 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Answer {
+  id: ID!
+  text: String!
+  question: Question!
+}
+
+type Question {
+  id: ID!
+  text: String!
+  questionnaire: Questionnaire!
+  answers: [Answer!]!
+}
+
+type Questionnaire {
+  id: ID!
+  title: String!
+  organization: Organization!
+  questions: [Question!]!
+  addressLists: [AddressList!]!
+}
+
+type Organization {
+  id: ID!
+  name: String!
+  questionnaires: [Questionnaire!]!
+  addressLists: [AddressList!]!
+}
+
+type AddressList {
+  id: ID!
+  title: String!
+  organization: Organization!
+  organizationId: Float!
+  questionnaires: [Questionnaire!]!
+  addresses: [Address!]!
+}
+
+type Address {
+  id: ID!
+  address1: String!
+  address2: String
+  city: String!
+  state: String!
+  zipcode: String!
+  addressLists: [AddressList!]!
+}
+
+type Query {
+  organization: Organization!
+}

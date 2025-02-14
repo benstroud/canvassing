@@ -35,6 +35,7 @@ npm install pg --save
 npm install --save @nestjs/typeorm typeorm pg
 npm install -g @mermaid-js/mermaid-cli
 npm install --save @nestjs/swagger
+npm i @nestjs/graphql @nestjs/apollo @apollo/server graphql --save
 ```
 
 ## Development Environment
