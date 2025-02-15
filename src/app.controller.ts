@@ -6,6 +6,8 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import {
@@ -20,14 +22,36 @@ import {
   CreateQuestionnaireDto,
   Questionnaire,
 } from './entities/questionnaire.entity';
+import { LocalAuthGuard } from './auth/local.strategy';
+import { AuthService } from './auth.service';
+import { Public } from './auth/public.decorator';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly authService: AuthService,
+  ) {}
 
+  @Public()
   @Get('')
   getHello(): string {
     return "Welcome to the Canvassing backend.<br><a href='/api'>REST OpenAPI Swagger UI</a><br><a href='/graphql'>GraphQL API Playground</a>";
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('auth/login')
+  async login(@Request() req) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return this.authService.login(req.user);
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('auth/logout')
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async logout(@Request() req) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    return req.logout();
   }
 
   @Get('partner/organization')

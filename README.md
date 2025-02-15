@@ -1,13 +1,13 @@
 ## Description
 
-<http://localhost:3000/api>
+### Diagram
 
 ```mermaid
 flowchart TD
     A[Mobile App]
     B[Website]
     C[NestJS REST Endpoints]
-    D[NestJS WebSocket Endpoints]
+    D[NestJS GraphQL Endpoints]
     E[PostgreSQL Database]
 
     A -->|HTTP Requests / WS| C
@@ -17,6 +17,26 @@ flowchart TD
     D -->|Pushes updates| A
     D -->|Pushes updates| B
 ```
+
+### Demo
+
+
+
+- OpenAPI Swagger UI: <http://localhost:3000/api>
+- GraphQL Playground UI: <http://localhost:3000/graphql>
+
+GraphQL subscription endpoint: <ws://localhost:3000/graphql>
+
+REST and GRAPHQL requests must be authenticated with a JWT token. Format for
+Authentication: 'Bearer <YOUR_JWT_OR_API_KEY>'
+
+#### Setting the auth token for the GraphQL explorer
+
+Click the Settings Gear in the top-right. In the Settings panel, look for HTTP
+Headers or Headers (the UI may say “Add header” or show a JSON editor). Provide
+a JSON object that includes your header(s).
+
+"Authorization": "Bearer YOUR_JWT_TOKEN"
 
 ## Steps I took setting up the project
 
@@ -36,6 +56,10 @@ npm install --save @nestjs/typeorm typeorm pg
 npm install -g @mermaid-js/mermaid-cli
 npm install --save @nestjs/swagger
 npm i @nestjs/graphql @nestjs/apollo @apollo/server graphql --save
+npm install --save @nestjs/passport passport passport-local bcrypt
+npm install --save-dev @types/passport-local
+npm install --save @nestjs/jwt passport-jwt
+npm install --save-dev @types/passport-jwt
 ```
 
 ## Development Environment

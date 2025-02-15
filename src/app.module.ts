@@ -13,23 +13,46 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { CanvassingResolver } from './app.resolvers';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { AuthModule } from './auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
   imports: [
-    //TypeOrmModule.forRoot({ name: DATA_SOURCE })
+    // Wire up TypeOrm database access
     DatabaseModule,
+
+    // Configure GraphQL
     GraphQLModule.forRoot<ApolloDriverConfig>({
       // Using Apollo Server
       driver: ApolloDriver,
       // GraphQL schema file will be generated here
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      // Debugging and playground
+      // Debugging enabled for stack traces. Disable for production.
       debug: true,
+      // Using Apollo Sandbox instead of graphql-playground
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
+    // Wire up authentication
+    AuthModule,
   ],
+  // The REST API controllers
   controllers: [AppController],
-  providers: [...entityRepositoriesProviders, AppService, CanvassingResolver],
+  providers: [
+    // TypeOrm entity repositories
+    ...entityRepositoriesProviders,
+    // The service routines supporting the REST API and GraphQL resolvers
+    AppService,
+    // The GraphQL resolvers
+    CanvassingResolver,
+    // Enable JWT authentication globally.
+    // APP_GUARD is a special token that tells Nest to use JwtAuthGuard globally.
+    // The @Public() decorator can be used to allow public access to specific routes.
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

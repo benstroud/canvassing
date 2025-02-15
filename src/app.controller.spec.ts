@@ -15,6 +15,7 @@ import {
   Questionnaire,
 } from './entities/questionnaire.entity';
 import { Question } from './entities/question.entity';
+import { AuthModule } from './auth.module';
 
 //#region Test fixtures
 
@@ -84,6 +85,7 @@ describe('AppController', () => {
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
+      imports: [AuthModule],
       controllers: [AppController],
       providers: [
         {

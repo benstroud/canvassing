@@ -10,10 +10,22 @@ async function bootstrap() {
     .setDescription('Canvassing API for demo purposes')
     .setVersion('1.0')
     .addTag('canvassing')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'Authorization (JWT)',
+    )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   // TODO review CORS configuration before production use.
   app.enableCors();

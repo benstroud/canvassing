@@ -11,6 +11,7 @@ import {
   ORGANIZATIONS_REPOSITORY,
   QUESTIONNAIRE_REPOSITORY,
   QUESTIONS_REPOSITORY,
+  USERS_REPOSITORY,
 } from './constants';
 import { Address } from './entities/address.entity';
 import { AddressList } from './entities/addresslist.entity';
@@ -18,6 +19,7 @@ import { Answer } from './entities/answer.entity';
 import { Organization } from './entities/organization.entity';
 import { Questionnaire } from './entities/questionnaire.entity';
 import { Question } from './entities/question.entity';
+import { User } from './entities/user.entity';
 
 export const entityRepositoriesProviders = [
   {
@@ -51,6 +53,11 @@ export const entityRepositoriesProviders = [
   {
     provide: QUESTIONS_REPOSITORY,
     useFactory: (dataSource: DataSource) => dataSource.getRepository(Question),
+    inject: [DATA_SOURCE],
+  },
+  {
+    provide: USERS_REPOSITORY,
+    useFactory: (dataSource: DataSource) => dataSource.getRepository(User),
     inject: [DATA_SOURCE],
   },
 ];

@@ -6,6 +6,7 @@ import {
   QUESTIONNAIRE_REPOSITORY,
   QUESTIONS_REPOSITORY,
   ANSWERS_REPOSITORY,
+  USERS_REPOSITORY,
 } from './constants';
 import { Repository } from 'typeorm';
 
@@ -24,6 +25,7 @@ import {
 } from './entities/questionnaire.entity';
 import { Question } from './entities/question.entity';
 import { Answer } from './entities/answer.entity';
+import { User, UserRole } from './entities/user.entity';
 
 @Injectable()
 export class AppService {
@@ -40,7 +42,40 @@ export class AppService {
     private organizationsRepository: Repository<Organization>,
     @Inject(ANSWERS_REPOSITORY)
     private answersRepository: Repository<Answer>,
+    @Inject(USERS_REPOSITORY)
+    private usersRepository: Repository<User>,
   ) {}
+
+  //#region Users CRUD and auth
+
+  async createUser(
+    username: string,
+    password: string,
+    role: UserRole = UserRole.PARTNER,
+  ): Promise<User> {
+    if (![UserRole.ADMIN, UserRole.PARTNER].includes(role)) {
+      throw new Error('Invalid role');
+    }
+
+    const user = this.usersRepository.create({ username, password, role });
+    return this.usersRepository.save(user);
+  }
+
+  async findUserValidatingPassword(
+    username: string,
+    password: string,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOneBy({
+      username: username,
+    });
+    if (!user) {
+      throw new NotFoundException(`User not found`);
+    }
+    if (!(await user.validatePassword(password))) {
+      throw new NotFoundException(`Incorrect password`);
+    }
+    return user;
+  }
 
   //#region Organizations CRUD
 
@@ -72,6 +107,19 @@ export class AppService {
     return organization;
   }
 
+  // TODO - fully switch to User+JWT
+  /* async findOrganizationByApiKey(apiKey: string): Promise<Organization> {
+    const organization = await this.organizationsRepository.findOneBy({
+      apiKey: apiKey,
+    });
+    if (!organization) {
+      throw new NotFoundException(
+        `Organization with API key ${apiKey} not found`,
+      );
+    }
+    return organization;
+  }
+ */
   // #endregion Organizations CRUD
 
   //#refion Address Lists CRUD
