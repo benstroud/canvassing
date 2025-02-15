@@ -44,7 +44,7 @@ export class Answer {
   address: Address; */
 }
 
-export class CreateAnswerCto {
+export class CreateAnswerDto {
   questionId: number;
   @ApiProperty({ description: 'The answer text' })
   text: string;

@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -24,11 +25,18 @@ export class User {
   @Column()
   password: string;
 
-  @Column({
+  /* @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.PARTNER, // Default role is 'partner'
   })
+  role: UserRole; */
+
+  @Column({
+    type: 'text',
+    default: 'PARTNER',
+  })
+  @ApiProperty({ enum: UserRole })
   role: UserRole;
 
   @BeforeInsert()

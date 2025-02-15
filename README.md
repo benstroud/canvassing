@@ -20,15 +20,41 @@ flowchart TD
 
 ### Demo
 
+For demo purposes, we'll use a local SQLite database instead of a database server. The following command will build the application and generate demo data stored to canvassing-development.sqlite.
 
+```bash
+npm run build && rm ./canvassing-development.sqlite; npm run manage:dev seed
+```
+
+You can then run the development server:
+
+```bash
+npm run start:dev
+```
+
+Then you can visit the following in your browser to explore the API.
 
 - OpenAPI Swagger UI: <http://localhost:3000/api>
 - GraphQL Playground UI: <http://localhost:3000/graphql>
 
-GraphQL subscription endpoint: <ws://localhost:3000/graphql>
-
 REST and GRAPHQL requests must be authenticated with a JWT token. Format for
 Authentication: 'Bearer <YOUR_JWT_OR_API_KEY>'
+
+To generate an auth token for use with the development server:
+
+```bash
+$ npm run manage:dev devtoken admin
+Bearer: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2MDY2NzAsImV4cCI6MTczOTYwNjczMH0.BEU6FiCFAaNbecHT9evwHg7_AWgjRSMe_cXu7rpqITU
+```
+
+The following is a curl example, making a HTTP request to the development server using a auth token:
+
+```bash
+$ curl -X 'GET' \
+  'http://localhost:3000/partner/organization' \
+  -H 'accept: */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2MDY1NzIsImV4cCI6MTczOTYwNjYzMn0.vF6H5f15xc8MA9g4mPSmJq6dni4jwsF_UWsSfZ7pjDM'
+{"id":1,"name":"Rutherford LLC"}
+```
 
 #### Setting the auth token for the GraphQL explorer
 
@@ -60,23 +86,26 @@ npm install --save @nestjs/passport passport passport-local bcrypt
 npm install --save-dev @types/passport-local
 npm install --save @nestjs/jwt passport-jwt
 npm install --save-dev @types/passport-jwt
+npm install --save sqlite3
+npm install nest-commander --save
 ```
 
 ## Development Environment
 
-### PostgreSQL locally for development
+### Sqlite3 development database
 
-[Docker compose](https://docs.docker.com/compose/) is utilized for local development to provide a development PostgreSQL database. The <./docker-compose.yml> file sets the database and user name, and password default. You can override the password by setting the `POSTGRES_PASSWORD` environment variable.
+For convenience, setting the `NODE_ENV` environment variable to `dev` will
+configure the app to use a SQLite database file
+(./canvassing-development.sqlite) instead of PostgreSQL which would be
+recommended for production. See <./src/database.providers.ts> for the configuration of
+each.
 
 ```bash
-
-# Start PostgreSQL locally, in the background.
-$ docker-compose up -d
+export NODE_ENV=dev
 ```
 
 ### Loading demo data
 
-TODO: Describe steps to prepare and load demonstration data to the PostgreSQL db.
 
 
 ## Nest.js - Compile and run commands
@@ -104,6 +133,17 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+### PostgreSQL locally for development
+
+[Docker compose](https://docs.docker.com/compose/) is utilized for local development to provide a development PostgreSQL database. The <./docker-compose.yml> file sets the database and user name, and password default. You can override the password by setting the `POSTGRES_PASSWORD` environment variable.
+
+```bash
+
+# Start PostgreSQL locally, in the background.
+$ docker-compose up -d
+```
+
 
 ## Nest.js -- Deployment
 

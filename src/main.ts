@@ -20,6 +20,7 @@ async function bootstrap() {
     )
     .build();
 
+  // OpenAPI (Swagger) doc/playground
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory, {
     swaggerOptions: {
@@ -30,6 +31,7 @@ async function bootstrap() {
   // TODO review CORS configuration before production use.
   app.enableCors();
 
+  //await CommandFactory.run(AppModule);
   await app.listen(process.env.PORT ?? 3000);
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

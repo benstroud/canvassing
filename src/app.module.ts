@@ -16,6 +16,11 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import { AuthModule } from './auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import {
+  CreateSuperUserCommand,
+  DevTokenCommand,
+  SeedCommand,
+} from './commands/management.command';
 
 @Module({
   imports: [
@@ -46,6 +51,13 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     AppService,
     // The GraphQL resolvers
     CanvassingResolver,
+    // Management commands
+    //   - To create an admin user.
+    ...CreateSuperUserCommand.registerWithSubCommands(),
+    //   - To populate the database with initial data.
+    ...SeedCommand.registerWithSubCommands(),
+    //   - To generate a JWT token for a user.
+    ...DevTokenCommand.registerWithSubCommands(),
     // Enable JWT authentication globally.
     // APP_GUARD is a special token that tells Nest to use JwtAuthGuard globally.
     // The @Public() decorator can be used to allow public access to specific routes.

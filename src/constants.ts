@@ -2,6 +2,7 @@ export const DEFAULT_POSTGRES_USER = 'canvassing_dev';
 export const DEFAULT_POSTGRES_PASSWORD = 'canvassing_dev';
 export const DEFAULT_POSTGRES_DB = 'canvassing_dev';
 export const DEFAULT_POSTGRES_PORT = 5432;
+export const DEV_SQLITE_DB = 'canvassing-development.sqlite';
 export const DATA_SOURCE = 'DATA_SOURCE';
 
 export const ORGANIZATIONS_REPOSITORY = 'ORGANIZATIONS_REPOSITORY';
