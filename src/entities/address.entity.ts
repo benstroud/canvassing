@@ -2,12 +2,14 @@ import {
   Column,
   Entity,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import { AddressList } from './addresslist.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Answer } from './answer.entity';
 
 @Entity()
 @ObjectType()
@@ -42,9 +44,9 @@ export class Address {
   @Field(() => [AddressList])
   addressLists: AddressList[];
 
-  /* // (Optional) Reverse relation if you want to access Answers related to this Address.
   @OneToMany(() => Answer, (answer) => answer.address)
-  answers: Answer[]; */
+  @Field(() => [Answer])
+  answers: Answer[];
 }
 
 export class CreateAddressDto {

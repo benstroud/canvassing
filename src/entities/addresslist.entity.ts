@@ -4,6 +4,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Organization } from './organization.entity';
@@ -11,6 +12,7 @@ import { Address } from './address.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Questionnaire } from './questionnaire.entity';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Answer } from './answer.entity';
 
 @Entity()
 @ObjectType()
@@ -23,15 +25,22 @@ export class AddressList {
   @Field()
   title: string;
 
+  @Column()
+  @Field()
+  organizationId: number;
+
   // Each AddressList belongs to one Organization.
   @ManyToOne(() => Organization, (organization) => organization.addressLists)
   @Field(() => Organization)
   organization: Organization;
 
-  @Column()
-  @Field()
-  organizationId: number;
+  // A User can have one or more AnswerLists
+  @OneToMany(() => Answer, (answer) => answer.addressList)
+  @Field(() => [Answer])
+  answers: Answer[];
 
+  // A Questionnaire can have one or more AddressLists. An AddressList can
+  // belong to one or more Questionnaires.
   @ManyToMany(
     () => Questionnaire,
     (questionnaire) => questionnaire.addressLists,

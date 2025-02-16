@@ -256,21 +256,58 @@ export class AppService {
 
   // #region Questions submit answers
 
-  async submitAnswers(
-    organizationId: number,
+  async submitAnswer(
+    userId: number,
+    questionId: number,
     questionnaireId: number,
     addressListId: number,
     addressId: number,
-    answers: { questionId: number; answerText: string }[],
+    answerText: string,
   ) {
-    // Validate questionnaire belongs to the organization
-    const questionnaire = await this.questionnairesRepository.findOne({
-      where: { id: questionnaireId },
-      relations: ['organization'],
+    // Validate user exists
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    if (user.role !== UserRole.PARTNER) {
+      throw new NotFoundException(`User ${userId} is not a partner role user`);
+    }
+
+    // Validate question exists and belongs to a questionnaire
+    const question = await this.questionsRepository.findOne({
+      where: { id: questionId },
+      relations: ['questionnaire', 'questionnaire.organization'],
     });
-    if (!questionnaire || questionnaire.organization.id !== organizationId) {
+
+    if (!question) {
+      throw new NotFoundException(`Question ${questionId} is not valid.`);
+    }
+    if (!question.questionnaire) {
       throw new NotFoundException(
-        `Questionnaire ${questionnaireId} is not valid for organization ${organizationId}`,
+        `Question ${questionId} does not belong to a questionnaire.`,
+      );
+    }
+    if (!question.questionnaire.organization) {
+      throw new NotFoundException(
+        `Questionnaire ${question.questionnaire.id} does not belong to an organization.`,
+      );
+    }
+
+    // Validate user is a member of the organization associated with the questionnaire.
+    const organizationId = question.questionnaire.organization.id;
+    const userOrganizations = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['organizations'],
+    });
+    if (!userOrganizations) {
+      throw new NotFoundException(`No organizations found for ${userId}`);
+    }
+    if (
+      !userOrganizations.organizations.some((org) => org.id === organizationId)
+    ) {
+      throw new NotFoundException(
+        `User ${userId} is not a member of organization ${organizationId} associated with questionnaire ${questionnaireId}`,
       );
     }
 
@@ -298,41 +335,41 @@ export class AppService {
       );
     }
 
-    // Validate each question belongs to the questionnaire
-    for (const { questionId } of answers) {
-      const question = await this.questionsRepository.findOne({
-        where: { id: questionId },
-        relations: ['questionnaire'],
-      });
-      if (!question || question.questionnaire.id !== questionnaireId) {
-        throw new NotFoundException(
-          `Question ${questionId} is not valid for questionnaire ${questionnaireId}`,
-        );
-      }
-    }
+    const answerToStore = new Answer();
+    answerToStore.text = answerText;
+    answerToStore.question = question;
+    answerToStore.addressList = addressList;
+    answerToStore.user = user;
+    answerToStore.address = address;
 
-    // Final step: create and insert answers
-    // Map over provided answers, create Answer entities, and save them
-    const answerEntities = answers.map(async (ans) => {
-      const question = await this.questionsRepository.findOne({
-        where: { id: ans.questionId },
-        relations: ['questionnaire'],
-      });
-      if (!question || question.questionnaire.id !== questionnaireId) {
-        throw new NotFoundException(
-          `Question ${ans.questionId} is not valid for question ${questionnaireId}`,
-        );
-      }
-      const answerToStore = new Answer();
-      answerToStore.text = ans.answerText;
-      answerToStore.question = question;
-      this.answersRepository.save(answerToStore).catch((err) => {
-        console.error('Error saving answer:', err);
-        throw err;
-      });
+    answerToStore.inlineReferenceData = JSON.stringify({
+      question: { id: question.id, text: question.text },
+      questionnaire: {
+        id: question.questionnaire.id,
+        title: question.questionnaire.title,
+      },
+      address: {
+        id: address.id,
+        address1: address.address1,
+        address2: address.address2,
+        city: address.city,
+        state: address.state,
+        zipcode: address.zipcode,
+      },
+      addressList: { id: addressList.id, title: addressList.title },
+      user: {
+        id: user.id,
+        username: user.username,
+      },
+      organization: {
+        id: question.questionnaire.organization.id,
+        name: question.questionnaire.organization.name,
+      },
     });
-    await Promise.all(answerEntities);
-    console.log('Submitted answers:', answerEntities);
+    this.answersRepository.save(answerToStore).catch((err) => {
+      console.error('Error saving answer:', err);
+      throw err;
+    });
   }
   //#endregion Questions submit answers
 }

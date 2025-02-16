@@ -4,6 +4,7 @@ import {
   Column,
   BeforeInsert,
   BeforeUpdate,
+  OneToMany,
 } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
@@ -12,6 +13,7 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Organization } from './organization.entity';
 import { JoinTable, ManyToMany } from 'typeorm';
 import { UserRole } from 'src/constants';
+import { Answer } from './answer.entity';
 
 @ObjectType()
 @Entity()
@@ -25,6 +27,11 @@ export class User {
   @ManyToMany(() => Organization, (organization) => organization.users)
   @JoinTable()
   organizations: Organization[];
+
+  // A User can have one or more Answers.
+  @OneToMany(() => Answer, (answer) => answer.user)
+  @Field(() => [Answer])
+  answers: Answer[];
 
   @Field()
   @Column({ unique: true })

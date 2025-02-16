@@ -27,12 +27,13 @@ import {
 
 import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { HTTPCurrentUserId, AuthGuard } from './auth/jwt-auth.guard';
+import { RESTCurrentUserId, AuthGuard } from './auth/jwt-auth.guard';
 import { SignInDto, User } from './entities/user.entity';
 import { CreateQuestionDto, Question } from './entities/question.entity';
 import { BEARER_AUTH_NAME, UserRole } from './constants';
 import { Roles } from './auth/roles.decorator';
 import { RolesGuard } from './auth/roles.guard';
+import { SubmitAnswerDto } from './entities/answer.entity';
 
 @Controller()
 export class AppController {
@@ -65,18 +66,42 @@ export class AppController {
     return req.logout();
   }
 
-  //#region Organizations controllers
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.PARTNER)
+  @Get('user/myaccount')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({
+    summary: 'Partner: Get user account info for logged in user.',
+  })
+  async myOrganization(@RESTCurrentUserId() user: User): Promise<User> {
+    return this.appService.findUserById(user.id);
+  }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
-  @Get('partner/organization')
+  @Post('user/answers/submit')
   @ApiBearerAuth(BEARER_AUTH_NAME)
-  @ApiOperation({ summary: 'Get the organization of the current user.' })
-  async myOrganization(@HTTPCurrentUserId() user: User): Promise<Organization> {
-    return this.appService.findOrganization(user.id);
+  @ApiOperation({
+    summary:
+      'Partner: Submit one or more answers to a questionnaire/addresslist.',
+  })
+  async submitAnswers(
+    @RESTCurrentUserId()
+    userId: number,
+    @Body() submitAnswerDto: SubmitAnswerDto,
+  ) {
+    await this.appService.submitAnswer(
+      userId,
+      submitAnswerDto.questionId,
+      submitAnswerDto.questionnaireId,
+      submitAnswerDto.addressListId,
+      submitAnswerDto.addressId,
+      submitAnswerDto.answerText,
+    );
+    return { message: 'Answer submitted successfully' };
   }
 
-  // TODO: Only allow for admin users
+  //#region Organizations controllers
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -89,8 +114,6 @@ export class AppController {
     return this.appService.createOrganization(createOrganizationDto);
   }
 
-  // TODO: Only allow for admin users
-
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/organizations/:id')
@@ -99,8 +122,6 @@ export class AppController {
   deleteOrganization(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.appService.deleteOrganization(id);
   }
-
-  // TODO: Only allow for admin users
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -111,7 +132,6 @@ export class AppController {
     return this.appService.findOrganizations();
   }
 
-  // TODO: Only allow for admin users
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/organizations/:id')
@@ -127,7 +147,6 @@ export class AppController {
 
   //#region AddressList controllers
 
-  // TODO: Only allow for admin users
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/addresslists')
@@ -171,32 +190,6 @@ export class AppController {
   //#endregion AddressList controllers
 
   //#region Questionnaire controllers
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.PARTNER)
-  @Post('partner/questionnaires/:questionnaireId/submit')
-  @ApiBearerAuth(BEARER_AUTH_NAME)
-  @ApiOperation({ summary: 'Partner: Submit answers to a questionnaire.' })
-  async submitAnswers(
-    @Param('questionnaireId') questionnaireId: number,
-    @Body()
-    body: {
-      addressId: number;
-      addressListId: number;
-      answers: { questionId: number; answerText: string }[];
-    },
-  ) {
-    // TODO: Get organization id from API key instead
-    const organanizationId = 1;
-
-    await this.appService.submitAnswers(
-      organanizationId,
-      questionnaireId,
-      body.addressListId,
-      body.addressId,
-      body.answers,
-    );
-    return { message: 'Answers submitted successfully' };
-  }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

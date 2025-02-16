@@ -111,7 +111,8 @@ export class SeedCommand extends CommandRunner {
       addressLists.push(addressList);
     }
 
-    await this.addressListsRepository.insert(addressLists);
+    // Use save to handle many-to-many relationships
+    await this.addressListsRepository.save(addressLists);
 
     console.log('Database seeding complete.');
   }

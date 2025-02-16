@@ -2,10 +2,22 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type User {
+  id: Int!
+  organizations: [Organization!]!
+  answers: [Answer!]!
+  username: String!
+  role: String!
+}
+
 type Answer {
   id: ID!
   text: String!
   question: Question!
+  addressList: AddressList!
+  user: User!
+  address: Address!
+  inlineReferenceData: String!
 }
 
 type Question {
@@ -23,13 +35,6 @@ type Questionnaire {
   addressLists: [AddressList!]!
 }
 
-type User {
-  id: Int!
-  organizations: [Organization!]!
-  username: String!
-  role: String!
-}
-
 type Organization {
   id: ID!
   name: String!
@@ -41,8 +46,9 @@ type Organization {
 type AddressList {
   id: ID!
   title: String!
-  organization: Organization!
   organizationId: Float!
+  organization: Organization!
+  answers: [Answer!]!
   questionnaires: [Questionnaire!]!
   addresses: [Address!]!
 }
@@ -55,6 +61,7 @@ type Address {
   state: String!
   zipcode: String!
   addressLists: [AddressList!]!
+  answers: [Answer!]!
 }
 
 type Query {
