@@ -23,37 +23,21 @@ export class QuestionnaireResolver {
 
 import { Query, Resolver } from '@nestjs/graphql';
 import { AppService } from './app.service';
-import { Organization } from './entities/organization.entity';
 import { User } from './entities/user.entity';
-import { UseGuards } from '@nestjs/common';
-import { GqlCurrentUser, GqlAuthGuard } from './auth/jwt-auth.guard';
+import { UnauthorizedException, UseGuards } from '@nestjs/common';
+import { GqlCurrentUserId, GqlAuthGuard } from './auth/jwt-auth.guard';
 
 @Resolver()
 export class CanvassingResolver {
   constructor(private readonly appService: AppService) {}
 
-  @Query(() => Organization, { name: 'organization' })
-  async getMyOrganization(): Promise<Organization> {
-    // TODO instead obtain organization id from API key
-    const id = 1;
-    return this.appService.findOrganization(id);
-  }
-
-  @Query(() => User, { name: 'myAccount' })
   @UseGuards(GqlAuthGuard)
-  async myAccount(@GqlCurrentUser() user: User): Promise<User> {
-    return this.appService.findUserById(user.id);
+  @Query(() => User, { name: 'myAccount' })
+  async myAccount(@GqlCurrentUserId() userId: number): Promise<User> {
+    console.log('myAccount userId:', userId);
+    if (userId === undefined) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.appService.findUserById(userId);
   }
-
-  /* @Query(() => [Questionnaire], { name: 'questionnaires' })
-  async getQuestionnaires(): Promise<Questionnaire[]> {
-    return this.appService.findQuestionnaires();
-  }
-
-  @Query(() => Questionnaire, { name: 'questionnaire' })
-  async getQuestionnaire(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<Questionnaire> {
-    return this.appService.findQuestionnaire(id);
-  } */
 }

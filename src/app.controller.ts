@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -22,11 +24,11 @@ import {
   CreateQuestionnaireDto,
   Questionnaire,
 } from './entities/questionnaire.entity';
-import { LocalAuthGuard } from './auth/local.strategy';
+
 import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { HTTPCurrentUser, JwtAuthGuard } from './auth/jwt-auth.guard';
-import { User } from './entities/user.entity';
+import { HTTPCurrentUserId, AuthGuard } from './auth/jwt-auth.guard';
+import { SignInDto, User } from './entities/user.entity';
 import { CreateQuestionDto, Question } from './entities/question.entity';
 import { BEARER_AUTH_NAME, UserRole } from './constants';
 import { Roles } from './auth/roles.decorator';
@@ -44,17 +46,16 @@ export class AppController {
     return "Welcome to the Canvassing backend.<br><a href='/api'>REST OpenAPI Swagger UI</a><br><a href='/graphql'>GraphQL API Playground</a>";
   }
 
-  @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('auth/login')
   @ApiOperation({
     summary: 'Login with username/password to obtain JWT token.',
   })
-  async login(@Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return this.authService.jwtTokenFromUserAttributes(req.user);
+  async login(@Body() signInDto: SignInDto) {
+    return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth(BEARER_AUTH_NAME)
   @ApiOperation({ summary: 'Logout and invalidate JWT token.' })
   @Post('auth/logout')
@@ -66,18 +67,18 @@ export class AppController {
 
   //#region Organizations controllers
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
   @Get('partner/organization')
   @ApiBearerAuth(BEARER_AUTH_NAME)
   @ApiOperation({ summary: 'Get the organization of the current user.' })
-  async myOrganization(@HTTPCurrentUser() user: User): Promise<Organization> {
+  async myOrganization(@HTTPCurrentUserId() user: User): Promise<Organization> {
     return this.appService.findOrganization(user.id);
   }
 
   // TODO: Only allow for admin users
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/organizations')
   @ApiOperation({ summary: 'Admin: Create a new organization.' })
@@ -90,7 +91,7 @@ export class AppController {
 
   // TODO: Only allow for admin users
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/organizations/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -101,7 +102,7 @@ export class AppController {
 
   // TODO: Only allow for admin users
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/organizations')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -111,7 +112,7 @@ export class AppController {
   }
 
   // TODO: Only allow for admin users
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/organizations/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -127,7 +128,7 @@ export class AppController {
   //#region AddressList controllers
 
   // TODO: Only allow for admin users
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/addresslists')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -138,7 +139,7 @@ export class AppController {
     return this.appService.createAddressList(createAddressListDto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/addresslists/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -147,7 +148,7 @@ export class AppController {
     return this.appService.deleteAddressList(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/addresslists')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -156,7 +157,7 @@ export class AppController {
     return this.appService.findAddressLists();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/addresslists/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -170,7 +171,7 @@ export class AppController {
   //#endregion AddressList controllers
 
   //#region Questionnaire controllers
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
   @Post('partner/questionnaires/:questionnaireId/submit')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -197,7 +198,7 @@ export class AppController {
     return { message: 'Answers submitted successfully' };
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/questionnaires')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -208,7 +209,7 @@ export class AppController {
     return this.appService.createQuestionnaire(createQuestionnaireDto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/questionnaires/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -217,7 +218,7 @@ export class AppController {
     return this.appService.deleteQuestionnaire(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/questionnaires')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -226,7 +227,7 @@ export class AppController {
     return this.appService.findQuestionnaires();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/questionnaires/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -241,7 +242,7 @@ export class AppController {
 
   //#region Questions controllers
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/questions')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -252,7 +253,7 @@ export class AppController {
     return this.appService.createQuestion(createQuestionDto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/question/:id')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -261,7 +262,7 @@ export class AppController {
     return this.appService.deleteQuestion(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/questions')
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -270,7 +271,7 @@ export class AppController {
     return this.appService.findQuestions();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth(BEARER_AUTH_NAME)
   @Get('admin/question/:id')

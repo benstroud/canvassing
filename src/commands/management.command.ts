@@ -179,18 +179,8 @@ export class DevTokenCommand extends CommandRunner {
       return;
     }
     const username = args[0];
-    const user = await this.usersRepository.findOneBy({
-      username: username,
-    });
-    if (!user) {
-      console.error('User not found.');
-      return;
-    }
-    const { access_token } = await this.authService.jwtTokenFromUserAttributes({
-      username: user.username,
-      userId: user.id,
-      role: user.role,
-    });
-    console.log(`Bearer ${access_token}`);
+
+    const accessToken = await this.authService.jwtFromUsernameOnly(username);
+    console.log(`Bearer ${accessToken}`);
   }
 }

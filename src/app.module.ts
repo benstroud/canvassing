@@ -36,6 +36,7 @@ import {
       // Using Apollo Sandbox instead of graphql-playground
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      context: ({ req }) => ({ req })
     }),
     // Wire up authentication
     AuthModule,

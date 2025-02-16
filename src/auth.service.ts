@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { User } from './entities/user.entity';
@@ -13,49 +13,38 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersRepository.findOneBy({
-      username: username,
-    });
+  // Obtain JWT token for user with password check
+  async signIn(
+    username: string,
+    pass: string,
+  ): Promise<{ access_token: string }> {
+    const user = await this.usersRepository.findOneBy({ username: username });
     if (!user) {
-      return null;
+      throw new UnauthorizedException();
     }
-    if (!(await user.validatePassword(pass))) {
-      return null;
+    const isValid = await user.validatePassword(pass);
+    if (!isValid) {
+      throw new UnauthorizedException();
     }
-    // Remove password from object.
+    // Strip password from user object.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
-    return result;
+
+    // Payload for JWT signing.
+    const payload = { sub: user.id, username: user.username, role: user.role };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async jwtTokenFromUserAttributes(userAttributes: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const username = userAttributes.username;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const userid = userAttributes.userId;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const role = userAttributes.role;
-
-    if (!username || !userid || !role) {
-      throw new Error('Invalid user attributes');
+  // Obtain JWT token for user witout password check. Should only be used for
+  // management command
+  async jwtFromUsernameOnly(username: string): Promise<string> {
+    const user = await this.usersRepository.findOneBy({ username: username });
+    if (!user) {
+      throw new UnauthorizedException();
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const payload = {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      username: username,
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      sub: userid,
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      role: role,
-    };
-    console.info('jwtTokenFromUserAttributes payload:', payload);
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    const payload = { sub: user.id, username: user.username, role: user.role };
+    return this.jwtService.signAsync(payload);
   }
 }

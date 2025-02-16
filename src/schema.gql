@@ -58,6 +58,5 @@ type Address {
 }
 
 type Query {
-  organization: Organization!
   myAccount: User!
 }

@@ -60,3 +60,10 @@ export class User {
     return bcrypt.compare(password, this.password);
   }
 }
+
+export class SignInDto {
+  @ApiProperty({ description: 'The username of the user' })
+  username: string;
+  @ApiProperty({ description: 'The password of the user' })
+  password: string;
+}

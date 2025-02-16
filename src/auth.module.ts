@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
+// import { PassportModule } from '@nestjs/passport';
 
-import { LocalAuthStrategy } from './auth/local.strategy';
+// import { LocalAuthStrategy } from './auth/local.strategy';
 import { DatabaseModule } from './database.module';
 import { AuthService } from './auth.service';
 import { DATA_SOURCE, jwtConstants, USERS_REPOSITORY } from './constants';
 import { DataSource } from 'typeorm';
 import { User } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtAuthStrategy } from './auth/jwt.strategy';
+// import { JwtAuthStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
-    PassportModule,
+    //PassportModule,
     DatabaseModule,
     JwtModule.register({
+      global: true,
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '90d' },
     }),
@@ -25,8 +26,8 @@ import { JwtAuthStrategy } from './auth/jwt.strategy';
       useFactory: (dataSource: DataSource) => dataSource.getRepository(User),
       inject: [DATA_SOURCE],
     },
-    LocalAuthStrategy,
-    JwtAuthStrategy,
+    //LocalAuthStrategy,
+    //JwtAuthStrategy,
     AuthService,
   ],
   exports: [AuthService],
