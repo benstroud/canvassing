@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType, InputType, Int } from '@nestjs/graphql';
 import { AddressList } from './addresslist.entity';
 import { User } from './user.entity';
 import { Address } from './address.entity';
@@ -84,29 +84,35 @@ export class CreateAnswerDto {
   addressId: number;
 }
 
+@InputType()
 export class SubmitAnswerDto {
   @ApiProperty({
     description: 'The questionnaire ID that the answer is associated with',
   })
+  @Field(() => Int)
   questionnaireId: number;
 
   @ApiProperty({
     description: 'The address list ID that the answer is associated with',
   })
+  @Field(() => Int)
   addressListId: number;
 
   @ApiProperty({
     description: 'The address ID that the answer is associated with',
   })
+  @Field(() => Int)
   addressId: number;
 
   @ApiProperty({
     description: 'The question ID that the answer is associated with',
   })
+  @Field(() => Int)
   questionId: number;
 
   @ApiProperty({
     description: 'The answer text',
   })
+  @Field()
   answerText: string;
 }

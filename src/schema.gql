@@ -67,3 +67,15 @@ type Address {
 type Query {
   myAccount: User!
 }
+
+type Mutation {
+  submitAnswer(submitAnswerDto: SubmitAnswerDto!): String!
+}
+
+input SubmitAnswerDto {
+  questionnaireId: Int!
+  addressListId: Int!
+  addressId: Int!
+  questionId: Int!
+  answerText: String!
+}

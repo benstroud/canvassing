@@ -366,10 +366,7 @@ export class AppService {
         name: question.questionnaire.organization.name,
       },
     });
-    this.answersRepository.save(answerToStore).catch((err) => {
-      console.error('Error saving answer:', err);
-      throw err;
-    });
+    await this.answersRepository.save(answerToStore);
   }
   //#endregion Questions submit answers
 }

@@ -101,7 +101,7 @@ After starting the development server, visit <http://localhost:3000/api>. In the
 ![Swagger Playground Auth Settings](./readme_assets/openai_playground_auth_settings.png)
 ![GraphQL Playground Bearer Auth](./readme_assets/openai_playground_bearer_entry.png)
 
-#### Example GraphQL query
+#### Example GraphQL queries
 
 ```graphql
 query MyAccount {
@@ -135,7 +135,22 @@ query MyAccount {
         }
       }
     }
-    
+  }
+}
+```
+
+```graphql
+mutation Mutation($submitAnswerDto: SubmitAnswerDto!) {
+  submitAnswer(submitAnswerDto: $submitAnswerDto)
+}
+
+{
+  "submitAnswerDto": {
+    "questionnaireId": 0,
+    "addressListId": 1,
+    "addressId": 174,
+    "questionId": 1,
+    "answerText": "test answer"
   }
 }
 ```

@@ -1,31 +1,25 @@
-/* import { Resolver, Query, Args, Int } from '@nestjs/graphql';
-import { Questionnaire } from './entities/questionnaire.entity';
-import { AppService } from './app.service';
-
-// Note: For a full code-first schema, the Questionnaire entity would normally be decorated with @ObjectType and its fields with @Field.
-@Resolver(() => Questionnaire)
-export class QuestionnaireResolver {
-  constructor(private readonly appService: AppService) {}
-
-  @Query(() => [Questionnaire], { name: 'questionnaires' })
-  async getQuestionnaires(): Promise<Questionnaire[]> {
-    return this.appService.findQuestionnaires();
-  }
-
-  @Query(() => Questionnaire, { name: 'questionnaire' })
-  async getQuestionnaire(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<Questionnaire> {
-    return this.appService.findQuestionnaire(id);
-  }
-}
- */
-
-import { Query, Resolver } from '@nestjs/graphql';
+import {
+  Query,
+  Resolver,
+  Mutation,
+  Args,
+  ObjectType,
+  Field,
+} from '@nestjs/graphql';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
-import { UnauthorizedException, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { GqlCurrentUserId, GqlAuthGuard } from './auth/jwt-auth.guard';
+import { SubmitAnswerDto } from './entities/answer.entity';
+
+@ObjectType()
+export class UserResponseDto {
+  @Field()
+  success: boolean;
+
+  @Field(() => User, { nullable: true })
+  user: User | null;
+}
 
 @Resolver()
 export class CanvassingResolver {
@@ -35,9 +29,37 @@ export class CanvassingResolver {
   @Query(() => User, { name: 'myAccount' })
   async myAccount(@GqlCurrentUserId() userId: number): Promise<User> {
     console.log('myAccount userId:', userId);
+
     if (userId === undefined) {
-      throw new UnauthorizedException('User not found');
+      throw new Error('User ID not found');
     }
-    return this.appService.findUserById(userId);
+    try {
+      const user = await this.appService.findUserById(userId);
+      return user;
+    } catch {
+      throw new Error('User not found');
+    }
+  }
+
+  @UseGuards(GqlAuthGuard)
+  @Mutation(() => String, { name: 'submitAnswer' })
+  async submitAnswer(
+    @GqlCurrentUserId() userId: number,
+    @Args('submitAnswerDto') submitAnswerDto: SubmitAnswerDto,
+  ): Promise<string> {
+    try {
+      await this.appService.submitAnswer(
+        userId,
+        submitAnswerDto.questionId,
+        submitAnswerDto.questionnaireId,
+        submitAnswerDto.addressListId,
+        submitAnswerDto.addressId,
+        submitAnswerDto.answerText,
+      );
+      return 'Ok';
+    } catch (error) {
+      console.error('submitAnswer error:', error);
+      return 'Error';
+    }
   }
 }
