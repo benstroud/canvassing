@@ -5,9 +5,12 @@ export const DEFAULT_POSTGRES_PASSWORD = 'canvassing_dev';
 export const DEFAULT_POSTGRES_DB = 'canvassing_dev';
 export const DEFAULT_POSTGRES_PORT = 5432;
 export const DEV_SQLITE_DB = 'canvassing-development.sqlite';
-// Used by database.providers.ts for database dependency injection.
-export const DATA_SOURCE = 'DATA_SOURCE';
 
+// Key name for database dependency injection.
+export const DATA_SOURCE = 'DATA_SOURCE';
+// Key name for GraphQL pub/sub dependency injection.
+export const PUB_SUB = 'PUB_SUB';
+// Key names for TypeORM entity repository dependency injection.
 export const ORGANIZATIONS_REPOSITORY = 'ORGANIZATIONS_REPOSITORY';
 export const ADDRESSES_REPOSITORY = 'ADDRESSES_REPOSITORY';
 export const ADDRESSLISTS_REPOSITORY = 'ADDRESSLISTS_REPOSITORY';

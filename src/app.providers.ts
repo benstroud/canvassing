@@ -9,6 +9,7 @@ import {
   ANSWERS_REPOSITORY,
   DATA_SOURCE,
   ORGANIZATIONS_REPOSITORY,
+  PUB_SUB,
   QUESTIONNAIRE_REPOSITORY,
   QUESTIONS_REPOSITORY,
   USERS_REPOSITORY,
@@ -20,6 +21,7 @@ import { Organization } from './entities/organization.entity';
 import { Questionnaire } from './entities/questionnaire.entity';
 import { Question } from './entities/question.entity';
 import { User } from './entities/user.entity';
+import { PubSub } from 'graphql-subscriptions';
 
 export const entityRepositoriesProviders = [
   {
@@ -61,3 +63,8 @@ export const entityRepositoriesProviders = [
     inject: [DATA_SOURCE],
   },
 ];
+
+export const graphQLPubSubProvider = {
+  provide: PUB_SUB,
+  useValue: new PubSub(),
+};

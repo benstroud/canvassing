@@ -7,6 +7,7 @@ import {
   QUESTIONS_REPOSITORY,
   ANSWERS_REPOSITORY,
   USERS_REPOSITORY,
+  PUB_SUB,
 } from './constants';
 import { Repository } from 'typeorm';
 
@@ -27,6 +28,7 @@ import { CreateQuestionDto, Question } from './entities/question.entity';
 import { Answer } from './entities/answer.entity';
 import { User } from './entities/user.entity';
 import { UserRole } from './constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class AppService {
@@ -45,6 +47,8 @@ export class AppService {
     private answersRepository: Repository<Answer>,
     @Inject(USERS_REPOSITORY)
     private usersRepository: Repository<User>,
+    @Inject(PUB_SUB)
+    private pubSub: PubSub,
   ) {}
 
   //#region Users CRUD and auth
@@ -63,7 +67,17 @@ export class AppService {
   }
 
   async findUserById(id: number): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ id: id });
+    const user = await this.usersRepository.findOne({
+      where: { id: id },
+      relations: [
+        'organizations',
+        'organizations.questionnaires',
+        'organizations.questionnaires.questions',
+        'organizations.questionnaires.questions.answers',
+        'organizations.addressLists',
+        'organizations.addressLists.addresses',
+      ],
+    });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -74,8 +88,9 @@ export class AppService {
     username: string,
     password: string,
   ): Promise<User> {
-    const user = await this.usersRepository.findOneBy({
-      username: username,
+    const user = await this.usersRepository.findOne({
+      where: { username: username },
+      relations: ['organizations'],
     });
     if (!user) {
       throw new NotFoundException(`User not found`);
@@ -88,11 +103,14 @@ export class AppService {
 
   //#region Organizations CRUD
 
-  createOrganization(
+  async createOrganization(
     createOrganizationDto: CreateOrganizationDto,
   ): Promise<Organization> {
     const organization = new Organization();
     organization.name = createOrganizationDto.name;
+    await this.pubSub.publish('organizationCreated', {
+      organizationCreated: organization,
+    });
     return this.organizationsRepository.save(organization);
   }
 
@@ -106,8 +124,9 @@ export class AppService {
   }
 
   async findOrganization(id: number): Promise<Organization> {
-    const organization = await this.organizationsRepository.findOneBy({
-      id: id,
+    const organization = await this.organizationsRepository.findOne({
+      where: { id: id },
+      relations: ['questionnaires'],
     });
     if (!organization) {
       throw new NotFoundException(`Organization with ID ${id} not found`);
@@ -151,8 +170,9 @@ export class AppService {
   }
 
   async findAddressList(id: number): Promise<AddressList> {
-    const addressList = await this.addressListsRepository.findOneBy({
-      id: id,
+    const addressList = await this.addressListsRepository.findOne({
+      where: { id: id },
+      relations: ['addresses'],
     });
     if (!addressList) {
       throw new NotFoundException(`AddressList with ID ${id} not found`);
@@ -184,8 +204,9 @@ export class AppService {
   }
 
   async findQuestionnaire(id: number): Promise<Questionnaire> {
-    const questionnaire = await this.questionnairesRepository.findOneBy({
-      id: id,
+    const questionnaire = await this.questionnairesRepository.findOne({
+      where: { id: id },
+      relations: ['questions'],
     });
     if (!questionnaire) {
       throw new NotFoundException(`Questionnaire with ID ${id} not found`);

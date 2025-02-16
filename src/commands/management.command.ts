@@ -82,6 +82,9 @@ export class SeedCommand extends CommandRunner {
 
     await this.organizationsRepository.insert(organization);
 
+    demoUser.organizations = [organization];
+    await this.usersRepository.save(demoUser);
+
     const questionnaire = new Questionnaire();
     questionnaire.title = `Questions about ${faker.word.noun()}`;
     questionnaire.organization = organization;

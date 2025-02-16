@@ -101,6 +101,45 @@ After starting the development server, visit <http://localhost:3000/api>. In the
 ![Swagger Playground Auth Settings](./readme_assets/openai_playground_auth_settings.png)
 ![GraphQL Playground Bearer Auth](./readme_assets/openai_playground_bearer_entry.png)
 
+#### Example GraphQL query
+
+```graphql
+query MyAccount {
+  myAccount {
+    id
+    role
+    username
+    organizations {
+      id
+      name
+      questionnaires {
+        id
+        questions {
+          id
+          text
+          answers {
+            id
+            text
+          }
+        }  
+      }
+      addressLists {
+        title
+        addresses {
+          id
+          address1
+          address2
+          city
+          state
+          zipcode
+        }
+      }
+    }
+    
+  }
+}
+```
+
 ## Steps I took setting up the project
 
 ```bash
@@ -119,12 +158,15 @@ npm install --save @nestjs/typeorm typeorm pg
 npm install -g @mermaid-js/mermaid-cli
 npm install --save @nestjs/swagger
 npm i @nestjs/graphql @nestjs/apollo @apollo/server graphql --save
-npm install --save @nestjs/passport passport passport-local bcrypt
-npm install --save-dev @types/passport-local
-npm install --save @nestjs/jwt passport-jwt
-npm install --save-dev @types/passport-jwt
+npm i --save bcrypt
+# npm install --save @nestjs/passport passport passport-local
+# npm install --save-dev @types/passport-local
+#npm install --save @nestjs/jwt passport-jwt
+#npm install --save-dev @types/passport-jwt
 npm install --save sqlite3
 npm install nest-commander --save
+# npm i graphql-ws --save
+npm i graphql-subscriptions --save
 ```
 
 ## Development Environment
@@ -137,15 +179,16 @@ configure the app to use a SQLite database file
 recommended for production. See <./src/database.providers.ts> for the configuration of
 each.
 
+### PostgreSQL locally for development
+
+[Docker compose](https://docs.docker.com/compose/) is utilized for local development to provide a development PostgreSQL database. The <./docker-compose.yml> file sets the database and user name, and password default. You can override the password by setting the `POSTGRES_PASSWORD` environment variable.
+
 ```bash
-export NODE_ENV=dev
+# Start PostgreSQL locally, in the background.
+$ docker-compose up -d
 ```
 
-### Loading demo data
-
-
-
-## Nest.js - Compile and run commands
+## Commands
 
 ```bash
 # development
@@ -154,9 +197,8 @@ $ npm run start
 # watch mode
 $ npm run start:dev
 
-# production mode
-$ npm run start:prod
-```
+# watch mode + debugging
+$ npm run start:debug
 
 ## Nest.js - Run tests
 
@@ -164,47 +206,10 @@ $ npm run start:prod
 # unit tests
 $ npm run test
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-### PostgreSQL locally for development
-
-[Docker compose](https://docs.docker.com/compose/) is utilized for local development to provide a development PostgreSQL database. The <./docker-compose.yml> file sets the database and user name, and password default. You can override the password by setting the `POSTGRES_PASSWORD` environment variable.
-
-```bash
-
-# Start PostgreSQL locally, in the background.
-$ docker-compose up -d
-```
-
-
 ## Nest.js -- Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+[Nest deployment documentation](https://docs.nestjs.com/deployment)
 
 ## Nest.js -- Resources
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
+Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
