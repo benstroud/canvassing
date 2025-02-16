@@ -24,6 +24,9 @@ export class QuestionnaireResolver {
 import { Query, Resolver } from '@nestjs/graphql';
 import { AppService } from './app.service';
 import { Organization } from './entities/organization.entity';
+import { User } from './entities/user.entity';
+import { UseGuards } from '@nestjs/common';
+import { GqlCurrentUser, GqlAuthGuard } from './auth/jwt-auth.guard';
 
 @Resolver()
 export class CanvassingResolver {
@@ -34,6 +37,12 @@ export class CanvassingResolver {
     // TODO instead obtain organization id from API key
     const id = 1;
     return this.appService.findOrganization(id);
+  }
+
+  @Query(() => User, { name: 'myAccount' })
+  @UseGuards(GqlAuthGuard)
+  async myAccount(@GqlCurrentUser() user: User): Promise<User> {
+    return this.appService.findUserById(user.id);
   }
 
   /* @Query(() => [Questionnaire], { name: 'questionnaires' })

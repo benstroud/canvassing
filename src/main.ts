@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { BEARER_AUTH_NAME } from './constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,11 +13,18 @@ async function bootstrap() {
     .addTag('canvassing')
     .addBearerAuth(
       {
-        type: 'http',
+        /* type: 'http',
         scheme: 'bearer',
-        bearerFormat: 'JWT',
+        bearerFormat: 'JWT', */
+
+        description: `Enter only the JWT token`,
+        name: 'Authorization',
+        bearerFormat: 'Bearer JWT',
+        scheme: 'Bearer',
+        type: 'http',
+        in: 'Header',
       },
-      'Authorization (JWT)',
+      BEARER_AUTH_NAME,
     )
     .build();
 

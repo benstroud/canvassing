@@ -23,9 +23,10 @@ import {
   Questionnaire,
   CreateQuestionnaireDto,
 } from './entities/questionnaire.entity';
-import { Question } from './entities/question.entity';
+import { CreateQuestionDto, Question } from './entities/question.entity';
 import { Answer } from './entities/answer.entity';
-import { User, UserRole } from './entities/user.entity';
+import { User } from './entities/user.entity';
+import { UserRole } from './constants';
 
 @Injectable()
 export class AppService {
@@ -59,6 +60,14 @@ export class AppService {
 
     const user = this.usersRepository.create({ username, password, role });
     return this.usersRepository.save(user);
+  }
+
+  async findUserById(id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ id: id });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 
   async findUserValidatingPassword(
@@ -96,7 +105,6 @@ export class AppService {
     return this.organizationsRepository.find();
   }
 
-  // TODO: Access
   async findOrganization(id: number): Promise<Organization> {
     const organization = await this.organizationsRepository.findOneBy({
       id: id,
@@ -124,7 +132,6 @@ export class AppService {
 
   //#refion Address Lists CRUD
 
-  // TODO: Access
   async createAddressList(
     createAddressListDto: CreateAddressListDto,
   ): Promise<AddressList> {
@@ -134,17 +141,15 @@ export class AppService {
     return this.addressListsRepository.save(addressList);
   }
 
-  // TODO: Access
   async deleteAddressList(id: number): Promise<void> {
     await this.addressListsRepository.delete(id);
   }
 
-  // TODO: Paging. Access.
+  // TODO: Paging
   async findAddressLists(): Promise<AddressList[]> {
     return this.addressListsRepository.find();
   }
 
-  // TODO: Access
   async findAddressList(id: number): Promise<AddressList> {
     const addressList = await this.addressListsRepository.findOneBy({
       id: id,
@@ -159,7 +164,6 @@ export class AppService {
 
   // #region Questionnaires CRUD
 
-  // TODO: Access
   async createQuestionnaire(
     createQuestionnaireDto: CreateQuestionnaireDto,
   ): Promise<Questionnaire> {
@@ -170,17 +174,15 @@ export class AppService {
     return this.questionnairesRepository.save(questionnaire);
   }
 
-  // TODO: Access
   async deleteQuestionnaire(id: number): Promise<void> {
     await this.questionnairesRepository.delete(id);
   }
 
-  // TODO: Paging. Access.
+  // TODO: Paging.
   async findQuestionnaires(): Promise<Questionnaire[]> {
     return this.questionnairesRepository.find();
   }
 
-  // TODO: Access
   async findQuestionnaire(id: number): Promise<Questionnaire> {
     const questionnaire = await this.questionnairesRepository.findOneBy({
       id: id,
@@ -192,6 +194,44 @@ export class AppService {
   }
 
   // #endregion Questionnaires CRUD
+
+  // #region Questions CRUD
+
+  async createQuestion(
+    createQuestionDto: CreateQuestionDto,
+  ): Promise<Question> {
+    const questionnaire = await this.questionnairesRepository.findOneBy({
+      id: createQuestionDto.questionnaireId,
+    });
+    if (!questionnaire) {
+      throw new NotFoundException(
+        `Questionnaire with ID ${createQuestionDto.questionnaireId} not found`,
+      );
+    }
+
+    const question = new Question();
+    question.text = createQuestionDto.text;
+    question.questionnaire = questionnaire;
+    return this.questionsRepository.save(question);
+  }
+
+  async deleteQuestion(id: number): Promise<void> {
+    await this.questionsRepository.delete(id);
+  }
+
+  async findQuestions(): Promise<Question[]> {
+    return this.questionsRepository.find();
+  }
+
+  async findQuestion(id: number): Promise<Question> {
+    const question = await this.questionsRepository.findOneBy({ id: id });
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${id} not found`);
+    }
+    return question;
+  }
+
+  // #endregion Questions CRUD
 
   // #region Questions submit answers
 

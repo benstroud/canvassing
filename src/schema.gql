@@ -23,11 +23,19 @@ type Questionnaire {
   addressLists: [AddressList!]!
 }
 
+type User {
+  id: Int!
+  organizations: [Organization!]!
+  username: String!
+  role: String!
+}
+
 type Organization {
   id: ID!
   name: String!
   questionnaires: [Questionnaire!]!
   addressLists: [AddressList!]!
+  users: [User!]!
 }
 
 type AddressList {
@@ -51,4 +59,5 @@ type Address {
 
 type Query {
   organization: Organization!
+  myAccount: User!
 }

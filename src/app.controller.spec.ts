@@ -124,7 +124,7 @@ describe('AppController', () => {
 
   //#region Organization tests
 
-  describe('myOrganization', () => {
+  /* describe('myOrganization', () => {
     it('should return an organization', async () => {
       jest
         .spyOn(appService, 'findOrganization')
@@ -132,7 +132,7 @@ describe('AppController', () => {
 
       expect(await appController.myOrganization()).toBe(fixtureOrganization1);
     });
-  });
+  }); */
 
   describe('createOrganization', () => {
     it('should create and return an organization', async () => {

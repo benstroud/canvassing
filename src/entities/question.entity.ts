@@ -36,6 +36,9 @@ export class Question {
 }
 
 export class CreateQuestionDto {
+  @ApiProperty({
+    description: 'The questionnaire ID that controls the question',
+  })
   questionnaireId: number;
   @ApiProperty({ description: 'The question text' })
   text: string;

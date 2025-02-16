@@ -1,8 +1,11 @@
+// This file contains constants used throughout the application.
+
 export const DEFAULT_POSTGRES_USER = 'canvassing_dev';
 export const DEFAULT_POSTGRES_PASSWORD = 'canvassing_dev';
 export const DEFAULT_POSTGRES_DB = 'canvassing_dev';
 export const DEFAULT_POSTGRES_PORT = 5432;
 export const DEV_SQLITE_DB = 'canvassing-development.sqlite';
+// Used by database.providers.ts for database dependency injection.
 export const DATA_SOURCE = 'DATA_SOURCE';
 
 export const ORGANIZATIONS_REPOSITORY = 'ORGANIZATIONS_REPOSITORY';
@@ -17,3 +20,14 @@ export const jwtConstants = {
   secret:
     'DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.',
 };
+// Used in main.ts .addBearerAuth() to set the name of the bearer token. Also
+// must match in @ApiBearerAuth(BEARER_AUTH_NAME) for Swagger UI auth to work.
+export const BEARER_AUTH_NAME = 'access-token';
+
+// Used by auth/roles.decorator.ts
+export const ROLES_KEY = 'roles';
+// Users can have one of two roles: ADMIN or PARTNER.
+export enum UserRole {
+  ADMIN = 'admin',
+  PARTNER = 'partner',
+}

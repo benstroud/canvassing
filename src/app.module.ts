@@ -14,8 +14,6 @@ import { join } from 'path';
 import { CanvassingResolver } from './app.resolvers';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { AuthModule } from './auth.module';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import {
   CreateSuperUserCommand,
   DevTokenCommand,
@@ -61,10 +59,10 @@ import {
     // Enable JWT authentication globally.
     // APP_GUARD is a special token that tells Nest to use JwtAuthGuard globally.
     // The @Public() decorator can be used to allow public access to specific routes.
-    {
+    /* {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    },
+    }, */
   ],
 })
 export class AppModule {}

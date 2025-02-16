@@ -1,7 +1,8 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import { User, UserRole } from '../entities/user.entity';
+import { User } from '../entities/user.entity';
+import { UserRole } from 'src/constants';
 import {
   ADDRESSES_REPOSITORY,
   ADDRESSLISTS_REPOSITORY,
@@ -57,6 +58,13 @@ export class SeedCommand extends CommandRunner {
 
     await this.usersRepository.insert(adminUser);
 
+    const demoUser = new User();
+    demoUser.username = 'demo';
+    demoUser.password = 'demo';
+    demoUser.role = UserRole.PARTNER;
+
+    await this.usersRepository.insert(demoUser);
+
     const addresses: Address[] = [];
     for (let i = 0; i < 1000; i++) {
       const address = new Address();
@@ -70,6 +78,7 @@ export class SeedCommand extends CommandRunner {
 
     const organization = new Organization();
     organization.name = faker.company.name();
+    organization.users = [demoUser];
 
     await this.organizationsRepository.insert(organization);
 
@@ -177,10 +186,11 @@ export class DevTokenCommand extends CommandRunner {
       console.error('User not found.');
       return;
     }
-    const { access_token } = await this.authService.login({
+    const { access_token } = await this.authService.jwtTokenFromUserAttributes({
       username: user.username,
       userId: user.id,
+      role: user.role,
     });
-    console.log(`Bearer: ${access_token}`);
+    console.log(`Bearer ${access_token}`);
   }
 }

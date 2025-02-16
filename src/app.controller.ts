@@ -24,8 +24,13 @@ import {
 } from './entities/questionnaire.entity';
 import { LocalAuthGuard } from './auth/local.strategy';
 import { AuthService } from './auth.service';
-import { Public } from './auth/public.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { HTTPCurrentUser, JwtAuthGuard } from './auth/jwt-auth.guard';
+import { User } from './entities/user.entity';
+import { CreateQuestionDto, Question } from './entities/question.entity';
+import { BEARER_AUTH_NAME, UserRole } from './constants';
+import { Roles } from './auth/roles.decorator';
+import { RolesGuard } from './auth/roles.guard';
 
 @Controller()
 export class AppController {
@@ -34,22 +39,24 @@ export class AppController {
     private readonly authService: AuthService,
   ) {}
 
-  @Public()
   @Get('')
   getHello(): string {
     return "Welcome to the Canvassing backend.<br><a href='/api'>REST OpenAPI Swagger UI</a><br><a href='/graphql'>GraphQL API Playground</a>";
   }
 
-  @ApiBearerAuth()
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
+  @ApiOperation({
+    summary: 'Login with username/password to obtain JWT token.',
+  })
   async login(@Request() req) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return this.authService.login(req.user);
+    return this.authService.jwtTokenFromUserAttributes(req.user);
   }
 
-  @ApiBearerAuth()
   @UseGuards(LocalAuthGuard)
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Logout and invalidate JWT token.' })
   @Post('auth/logout')
   // eslint-disable-next-line @typescript-eslint/require-await
   async logout(@Request() req) {
@@ -57,19 +64,24 @@ export class AppController {
     return req.logout();
   }
 
-  @ApiBearerAuth()
-  @Get('partner/organization')
-  async myOrganization(): Promise<Organization> {
-    // TODO instead obtain organization id from API key
-    const id = 1;
-    return this.appService.findOrganization(id);
-  }
-
   //#region Organizations controllers
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.PARTNER)
+  @Get('partner/organization')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Get the organization of the current user.' })
+  async myOrganization(@HTTPCurrentUser() user: User): Promise<Organization> {
+    return this.appService.findOrganization(user.id);
+  }
+
   // TODO: Only allow for admin users
-  @ApiBearerAuth()
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post('admin/organizations')
+  @ApiOperation({ summary: 'Admin: Create a new organization.' })
+  @ApiBearerAuth(BEARER_AUTH_NAME)
   createOrganization(
     @Body() createOrganizationDto: CreateOrganizationDto,
   ): Promise<Organization> {
@@ -77,22 +89,33 @@ export class AppController {
   }
 
   // TODO: Only allow for admin users
-  @ApiBearerAuth()
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete('admin/organizations/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Delete an organization.' })
   deleteOrganization(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.appService.deleteOrganization(id);
   }
 
   // TODO: Only allow for admin users
-  @ApiBearerAuth()
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/organizations')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get all organizations.' })
   async findOrganizations(): Promise<Organization[]> {
     return this.appService.findOrganizations();
   }
 
   // TODO: Only allow for admin users
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/organizations/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get an organization by ID.' })
   async findOrganization(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Organization> {
@@ -104,28 +127,40 @@ export class AppController {
   //#region AddressList controllers
 
   // TODO: Only allow for admin users
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post('admin/addresslists')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Create a new address list.' })
   createAddressList(
     @Body() createAddressListDto: CreateAddressListDto,
   ): Promise<AddressList> {
     return this.appService.createAddressList(createAddressListDto);
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete('admin/addresslists/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Delete an address list.' })
   deleteAddressList(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.appService.deleteAddressList(id);
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/addresslists')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get all address lists.' })
   async findAddressLists(): Promise<AddressList[]> {
     return this.appService.findAddressLists();
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/addresslists/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get an address list by ID.' })
   async findAddressList(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<AddressList> {
@@ -135,9 +170,11 @@ export class AppController {
   //#endregion AddressList controllers
 
   //#region Questionnaire controllers
-
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.PARTNER)
   @Post('partner/questionnaires/:questionnaireId/submit')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Partner: Submit answers to a questionnaire.' })
   async submitAnswers(
     @Param('questionnaireId') questionnaireId: number,
     @Body()
@@ -160,28 +197,40 @@ export class AppController {
     return { message: 'Answers submitted successfully' };
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post('admin/questionnaires')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Create a new questionnaire.' })
   createQuestionnaire(
     @Body() createQuestionnaireDto: CreateQuestionnaireDto,
   ): Promise<Questionnaire> {
     return this.appService.createQuestionnaire(createQuestionnaireDto);
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Delete('admin/questionnaires/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Delete a questionnaire.' })
   deleteQuestionnaire(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.appService.deleteQuestionnaire(id);
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/questionnaires')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get all questionnaires.' })
   async findQuestionnaires(): Promise<Questionnaire[]> {
     return this.appService.findQuestionnaires();
   }
 
-  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('admin/questionnaires/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get a questionnaire by ID.' })
   async findQuestionnaire(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Questionnaire> {
@@ -189,4 +238,46 @@ export class AppController {
   }
 
   //#endregion Questionnaire controllers
+
+  //#region Questions controllers
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('admin/questions')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Create a new question.' })
+  createQuestion(
+    @Body() createQuestionDto: CreateQuestionDto,
+  ): Promise<Question> {
+    return this.appService.createQuestion(createQuestionDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/question/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Delete a question.' })
+  deleteQuestion(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.appService.deleteQuestion(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/questions')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get all questions.' })
+  async findQuestions(): Promise<Question[]> {
+    return this.appService.findQuestions();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @Get('admin/question/:id')
+  @ApiOperation({ summary: 'Admin: Get a question by ID.' })
+  async findQuestion(@Param('id', ParseIntPipe) id: number): Promise<Question> {
+    return this.appService.findQuestion(id);
+  }
+
+  //#endregion
 }

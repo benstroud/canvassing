@@ -40,6 +40,9 @@ export class Questionnaire {
 }
 
 export class CreateQuestionnaireDto {
+  @ApiProperty({
+    description: 'The organization ID that controls the questionnaire',
+  })
   organizationId: number;
   @ApiProperty({ description: 'The title of the questionnaire' })
   title: string;

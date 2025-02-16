@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
@@ -9,6 +10,7 @@ import { Questionnaire } from './questionnaire.entity';
 import { AddressList } from './addresslist.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { User } from './user.entity';
 
 @ObjectType()
 @Entity()
@@ -31,6 +33,11 @@ export class Organization {
   @OneToMany(() => AddressList, (addressList) => addressList.organization)
   @Field(() => [AddressList])
   addressLists: AddressList[];
+
+  // An Organization can have one or more Users. A User can belong to multiple Organizations.
+  @ManyToMany(() => User, (user) => user.organizations)
+  @Field(() => [User])
+  users: User[];
 }
 
 export class CreateOrganizationDto {

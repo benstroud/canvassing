@@ -16,7 +16,7 @@ import { JwtAuthStrategy } from './auth/jwt.strategy';
     DatabaseModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
+      signOptions: { expiresIn: '90d' },
     }),
   ],
   providers: [

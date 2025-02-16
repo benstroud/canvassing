@@ -18,51 +18,88 @@ flowchart TD
     D -->|Pushes updates| B
 ```
 
-### Demo
+## Overview
 
-For demo purposes, we'll use a local SQLite database instead of a database server. The following command will build the application and generate demo data stored to canvassing-development.sqlite.
+## Demo
+
+For demo purposes, we'll use a local SQLite database instead of a database server. The following command will build the application and generate demo data stored to the canvassing-development.sqlite file.
 
 ```bash
 npm run build && rm ./canvassing-development.sqlite; npm run manage:dev seed
 ```
 
-You can then run the development server:
+You can then start the development server:
 
 ```bash
 npm run start:dev
 ```
 
-Then you can visit the following in your browser to explore the API.
+Then, you can visit the following in your browser to explore the API.
 
-- OpenAPI Swagger UI: <http://localhost:3000/api>
-- GraphQL Playground UI: <http://localhost:3000/graphql>
+- OpenAPI/Swagger Playground UI: <http://localhost:3000/api>
+- GraphQL Playground UI: <Http://Localhost:3000/Graphql>
 
-REST and GRAPHQL requests must be authenticated with a JWT token. Format for
-Authentication: 'Bearer <YOUR_JWT_OR_API_KEY>'
+### Authentication
 
-To generate an auth token for use with the development server:
+REST and GRAPHQL requests must be authenticated with a JWT token. The token should be included in HTTP requests with header name `Authentication` and value formatted as `Bearer <JWT_TOKEN>`.
+
+For the demo, generate an auth tokens for use with the development server:
+
+### Admin user token
+
+To generate a JWT token for the `admin` user that was generated when seeing the development database:
 
 ```bash
 $ npm run manage:dev devtoken admin
-Bearer: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2MDY2NzAsImV4cCI6MTczOTYwNjczMH0.BEU6FiCFAaNbecHT9evwHg7_AWgjRSMe_cXu7rpqITU
+Bearer ...
 ```
 
-The following is a curl example, making a HTTP request to the development server using a auth token:
+### Non-admin user token
+
+To generate a JWT token for the non-admin `demo` user that was generated when seeding the development database:
+
+```bash
+$ npm run manage:dev devtoken demo
+Bearer ...
+```
+
+Next, copy/save the generated tokens to then use with the REST and GraphQL
+playgrounds. The copied value will look something like the following but with a
+different token value:
+
+```text
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2NzI2NDgsImV4cCI6MTc0NzQ0ODY0OH0.iO89OCf-1avukhGULLtU6sP9brfA6zyhNpuLb_ptKdQ
+```
+
+The following is a a curl example, utilizing the JWT token in the HTTP request
+header:
 
 ```bash
 $ curl -X 'GET' \
   'http://localhost:3000/partner/organization' \
-  -H 'accept: */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2MDY1NzIsImV4cCI6MTczOTYwNjYzMn0.vF6H5f15xc8MA9g4mPSmJq6dni4jwsF_UWsSfZ7pjDM'
-{"id":1,"name":"Rutherford LLC"}
+  -H 'accept: */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2NzI2NDgsImV4cCI6MTc0NzQ0ODY0OH0.iO89OCf-1avukhGULLtU6sP9brfA6zyhNpuLb_ptKdQ'
+{"id":1,"name":"Gutkowski, Flatley and Douglas"}
 ```
 
 #### Setting the auth token for the GraphQL explorer
 
-Click the Settings Gear in the top-right. In the Settings panel, look for HTTP
-Headers or Headers (the UI may say “Add header” or show a JSON editor). Provide
-a JSON object that includes your header(s).
+After starting the development server, visit <http://localhost:3000/graphql>. In
+the upper left hand corner you will see a gear icon to open connection settings.
+Once opened, paste in the generated token, using the pattern `Bearer <JWT_TOKEN>`,
+into the Shared Headers section, and set the header name to `Authorization`.
+Once saved, the GraphQL Playground will begin including the auth token in
+requests for the associated user account that has been seeded in the database
+for the demo.
 
-"Authorization": "Bearer YOUR_JWT_TOKEN"
+![GraphQL Playground Connection Settings](./readme_assets/gql_playground_connection_settings.png)
+![GraphQL Playground Bearer Auth](./readme_assets/gql_playground_bearer_auth.png)
+
+#### Setting the auth token for the Swagger REST/OpenAPI explorer
+
+After starting the development server, visit <http://localhost:3000/api>. In the upper right hand side you will find a button labeled "Authorize". Click that button and then enter the generated token using the pattern `Bearer <JWT_TOKEN>`.
+
+![Swagger Playground Auth Settings](./readme_assets/openai_playground_auth_settings.png)
+![GraphQL Playground Bearer Auth](./readme_assets/openai_playground_bearer_entry.png)
 
 ## Steps I took setting up the project
 

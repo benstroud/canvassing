@@ -30,9 +30,30 @@ export class AuthService {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async login(user: any) {
+  async jwtTokenFromUserAttributes(userAttributes: any) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const payload = { username: user.username, sub: user.userId };
+    const username = userAttributes.username;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const userid = userAttributes.userId;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const role = userAttributes.role;
+
+    if (!username || !userid || !role) {
+      throw new Error('Invalid user attributes');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const payload = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      username: username,
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      sub: userid,
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      role: role,
+    };
+    console.info('jwtTokenFromUserAttributes payload:', payload);
     return {
       access_token: this.jwtService.sign(payload),
     };
