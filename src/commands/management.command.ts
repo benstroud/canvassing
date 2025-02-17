@@ -1,8 +1,12 @@
+// Description: CLI Commands for managing the application. Provides the
+// SeedCommand, CreateSuperUserCommand, and DevTokenCommand command provider
+// classes.
+
 import { Command, CommandRunner } from 'nest-commander';
 import { Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../entities/user.entity';
-import { UserRole } from 'src/constants';
+import { UserRole } from '../constants';
 import {
   ADDRESSES_REPOSITORY,
   ADDRESSLISTS_REPOSITORY,
@@ -11,17 +15,18 @@ import {
   QUESTIONNAIRE_REPOSITORY,
   QUESTIONS_REPOSITORY,
   USERS_REPOSITORY,
-} from 'src/constants';
-import { Address } from 'src/entities/address.entity';
-import { AddressList } from 'src/entities/addresslist.entity';
-import { Questionnaire } from 'src/entities/questionnaire.entity';
-import { Question } from 'src/entities/question.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { Answer } from 'src/entities/answer.entity';
+} from '../constants';
+import { Address } from '../entities/address.entity';
+import { AddressList } from '../entities/addresslist.entity';
+import { Questionnaire } from '../entities/questionnaire.entity';
+import { Question } from '../entities/question.entity';
+import { Organization } from '../entities/organization.entity';
+import { Answer } from '../entities/answer.entity';
 import * as readline from 'readline'; // Added import for interactive prompt
 import { faker } from '@faker-js/faker';
-import { AuthService } from 'src/auth.service';
+import { AuthService } from '../auth.service';
 
+// Seed the development database with initial data for demo purposes.
 @Injectable()
 @Command({
   name: 'seed',
@@ -118,6 +123,7 @@ export class SeedCommand extends CommandRunner {
   }
 }
 
+// Create an admin user interactively.
 @Injectable()
 @Command({
   name: 'createsuperuser',
@@ -163,6 +169,12 @@ export class CreateSuperUserCommand extends CommandRunner {
   }
 }
 
+// Generate JWT token for a development user. This command is useful for
+// obtaining a JWT token for a user that was created during the database
+// seeding. After seeding the database, you can use do the following:
+//
+//    npm run manage:dev devtoken demo
+//    npm run manage:dev devtoken admin
 @Injectable()
 @Command({
   name: 'devtoken',

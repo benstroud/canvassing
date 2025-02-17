@@ -1,12 +1,6 @@
-import {
-  Query,
-  Resolver,
-  Mutation,
-  Args,
-  ObjectType,
-  Field,
-  Subscription,
-} from '@nestjs/graphql';
+// Description: Resolvers for the GraphQL API.
+
+import { Query, Resolver, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
 import { Inject, UseGuards } from '@nestjs/common';
@@ -14,15 +8,6 @@ import { GqlCurrentUserId, GqlAuthGuard } from './auth/jwt-auth.guard';
 import { Answer, SubmitAnswerDto } from './entities/answer.entity';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from './constants';
-
-@ObjectType()
-export class UserResponseDto {
-  @Field()
-  success: boolean;
-
-  @Field(() => User, { nullable: true })
-  user: User | null;
-}
 
 @Resolver()
 export class CanvassingResolver {
@@ -32,6 +17,9 @@ export class CanvassingResolver {
     private pubSub: PubSub,
   ) {}
 
+  // GraphQL query for fetching the current user's account information and
+  // associated organizations, questionnaires, address lists, questions and
+  // answers.
   @UseGuards(GqlAuthGuard)
   @Query(() => User, { name: 'myAccount' })
   async myAccount(@GqlCurrentUserId() userId: number): Promise<User> {
@@ -48,6 +36,9 @@ export class CanvassingResolver {
     }
   }
 
+  // GraphQL mutation for submitting an answer to a question. This fires a
+  // subscription event to the newAnswer pub-sub topic to notify clients of the
+  // new answer object which includes inline reference data.
   @UseGuards(GqlAuthGuard)
   @Mutation(() => String, { name: 'submitAnswer' })
   async submitAnswer(
@@ -70,6 +61,8 @@ export class CanvassingResolver {
     }
   }
 
+  // GraphQL subscription for communicating new answers answer events to
+  // clients.
   @Subscription(() => Answer, {
     name: 'newAnswer',
   })

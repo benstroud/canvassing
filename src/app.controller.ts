@@ -1,3 +1,5 @@
+// Controllers for REST API endpoints.
+
 import {
   Body,
   Controller,
@@ -45,11 +47,13 @@ export class AppController {
     @Inject(PUB_SUB) private pubSub: PubSub,
   ) {}
 
+  // Public landing page for the API with links to the REST and GraphQL UIs.
   @Get('')
   getHello(): string {
     return "Welcome to the Canvassing backend.<br><a href='/api'>REST OpenAPI Swagger UI</a><br><a href='/graphql'>GraphQL API Playground</a>";
   }
 
+  // Login with username/password to obtain JWT token.
   @HttpCode(HttpStatus.OK)
   @Post('auth/login')
   @ApiOperation({
@@ -59,6 +63,7 @@ export class AppController {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
+  // Logout and invalidate JWT token.
   @UseGuards(AuthGuard)
   @ApiBearerAuth(BEARER_AUTH_NAME)
   @ApiOperation({ summary: 'Logout and invalidate JWT token.' })
@@ -69,6 +74,7 @@ export class AppController {
     return req.logout();
   }
 
+  // Get user account info for logged in user.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
   @Get('user/myaccount')
@@ -80,20 +86,22 @@ export class AppController {
     return this.appService.findUserById(user.id);
   }
 
+  // Submit one answer to a questionnaire/addresslist. Fires a GraphQL
+  // subscription event to the newAnswer pub-sub topic to notify clients of the
+  // new answer object which includes inline reference data.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.PARTNER)
   @Post('user/answers/submit')
   @ApiBearerAuth(BEARER_AUTH_NAME)
   @ApiOperation({
-    summary:
-      'Partner: Submit one or more answers to a questionnaire/addresslist.',
+    summary: 'Partner: Submit one answer to a questionnaire/addresslist.',
   })
-  async submitAnswers(
+  async submitAnswer(
     @RESTCurrentUserId()
     userId: number,
     @Body() submitAnswerDto: SubmitAnswerDto,
   ) {
-    const answer = await this.appService.submitAnswer(
+    await this.appService.submitAnswer(
       userId,
       submitAnswerDto.questionId,
       submitAnswerDto.questionnaireId,
@@ -101,21 +109,12 @@ export class AppController {
       submitAnswerDto.addressId,
       submitAnswerDto.answerText,
     );
-    console.info(
-      'Signalling to subscribers that an answer was added. answer:',
-      answer,
-    );
-
-    await this.pubSub.publish('newAnswer', {
-      //testSubscription: 'Hello, world!',
-      newAnswer: answer,
-    });
-
     return { message: 'Answer submitted successfully' };
   }
 
-  //#region Organizations controllers
+  //#region Organizations admin CRUD controllers
 
+  // Create a new organization.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/organizations')
@@ -127,6 +126,7 @@ export class AppController {
     return this.appService.createOrganization(createOrganizationDto);
   }
 
+  // Delete an organization.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/organizations/:id')
@@ -136,6 +136,8 @@ export class AppController {
     return this.appService.deleteOrganization(id);
   }
 
+  // Get all organizations.
+  // TODO paging
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/organizations')
@@ -145,6 +147,7 @@ export class AppController {
     return this.appService.findOrganizations();
   }
 
+  // Get an organization by ID.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/organizations/:id')
@@ -156,10 +159,11 @@ export class AppController {
     return this.appService.findOrganization(id);
   }
 
-  //#endregion Organizations controllers
+  //#endregion Organizations admin CRUD controllers
 
-  //#region AddressList controllers
+  //#region AddressList admin CRUD controllers
 
+  // Create a new address list.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/addresslists')
@@ -171,6 +175,7 @@ export class AppController {
     return this.appService.createAddressList(createAddressListDto);
   }
 
+  // Delete an address list.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/addresslists/:id')
@@ -180,6 +185,8 @@ export class AppController {
     return this.appService.deleteAddressList(id);
   }
 
+  // Get all address lists.
+  // TODO paging
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/addresslists')
@@ -189,6 +196,7 @@ export class AppController {
     return this.appService.findAddressLists();
   }
 
+  // Get an address list by ID.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/addresslists/:id')
@@ -200,10 +208,11 @@ export class AppController {
     return this.appService.findAddressList(id);
   }
 
-  //#endregion AddressList controllers
+  //#endregion AddressList admin CRUD controllers
 
-  //#region Questionnaire controllers
+  //#region Questionnaire admin CRUD controllers
 
+  // Create a new questionnaire.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/questionnaires')
@@ -215,6 +224,7 @@ export class AppController {
     return this.appService.createQuestionnaire(createQuestionnaireDto);
   }
 
+  // Delete a questionnaire.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/questionnaires/:id')
@@ -224,6 +234,8 @@ export class AppController {
     return this.appService.deleteQuestionnaire(id);
   }
 
+  // Get all questionnaires.
+  // TODO paging
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/questionnaires')
@@ -233,6 +245,7 @@ export class AppController {
     return this.appService.findQuestionnaires();
   }
 
+  // Get a questionnaire by ID.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/questionnaires/:id')
@@ -244,10 +257,11 @@ export class AppController {
     return this.appService.findQuestionnaire(id);
   }
 
-  //#endregion Questionnaire controllers
+  //#endregion Questionnaire admin CRUD controllers
 
-  //#region Questions controllers
+  //#region Questions admin CRUD controllers
 
+  // Create a new question.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Post('admin/questions')
@@ -259,6 +273,7 @@ export class AppController {
     return this.appService.createQuestion(createQuestionDto);
   }
 
+  // Delete a question.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete('admin/question/:id')
@@ -268,6 +283,8 @@ export class AppController {
     return this.appService.deleteQuestion(id);
   }
 
+  // Get all questions.
+  // TODO paging
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get('admin/questions')
@@ -277,6 +294,7 @@ export class AppController {
     return this.appService.findQuestions();
   }
 
+  // Get a question by ID.
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth(BEARER_AUTH_NAME)
@@ -286,5 +304,5 @@ export class AppController {
     return this.appService.findQuestion(id);
   }
 
-  //#endregion
+  //#endregion Questions admin CRUD controllers
 }

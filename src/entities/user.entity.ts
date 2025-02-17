@@ -1,3 +1,5 @@
+// User TypeORM entity
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -12,7 +14,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Organization } from './organization.entity';
 import { JoinTable, ManyToMany } from 'typeorm';
-import { UserRole } from 'src/constants';
+import { UserRole } from '../constants';
 import { Answer } from './answer.entity';
 
 @ObjectType()
@@ -22,7 +24,8 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // A User can belong to one or more Organizations. An Organization can have one or more Users.
+  // A User can belong to one or more Organizations. An Organization can have
+  // one or more Users.
   @Field(() => [Organization])
   @ManyToMany(() => Organization, (organization) => organization.users)
   @JoinTable()
@@ -37,11 +40,11 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  // The password is stored as a salted bcrypt hash.
+  // The password is stored as a salted bcrypt hash (see hashPassword() below).
   @Column()
   password: string;
 
-  // By default, a new user is created as a PARTNER.
+  // By default, a new user is created as a non-admin PARTNER user.
   @Field(() => String)
   @Column({
     type: 'text',
@@ -61,6 +64,7 @@ export class User {
     }
   }
 
+  // Verifying the password when a user logs in - using bcrypt.
   // eslint-disable-next-line @typescript-eslint/require-await
   async validatePassword(password: string): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -68,6 +72,8 @@ export class User {
   }
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a /auth/login request. Descriptions appear in Swagger UI.
 export class SignInDto {
   @ApiProperty({ description: 'The username of the user' })
   username: string;

@@ -1,3 +1,5 @@
+// Organization TypeORM Entity
+
 import {
   Column,
   Entity,
@@ -40,6 +42,9 @@ export class Organization {
   users: User[];
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a request to create an Organization. Descriptions appear in Swagger
+// UI.
 export class CreateOrganizationDto {
   @ApiProperty({ description: 'The name of the organization' })
   name: string;

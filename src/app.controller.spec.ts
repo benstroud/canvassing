@@ -1,3 +1,5 @@
+// Purpose: Test file for app.controller.ts.
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -16,6 +18,8 @@ import {
 } from './entities/questionnaire.entity';
 import { Question } from './entities/question.entity';
 import { AuthModule } from './auth.module';
+import { PUB_SUB } from './constants';
+import { PubSub } from 'graphql-subscriptions';
 
 //#region Test fixtures
 
@@ -106,6 +110,10 @@ describe('AppController', () => {
             findQuestionnaires: jest.fn(),
             findQuestionnaire: jest.fn(),
           },
+        },
+        {
+          provide: PUB_SUB,
+          useValue: new PubSub(),
         },
       ],
     }).compile();

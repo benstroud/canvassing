@@ -1,3 +1,5 @@
+// Description: The entry point of the application.
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -13,10 +15,6 @@ async function bootstrap() {
     .addTag('canvassing')
     .addBearerAuth(
       {
-        /* type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT', */
-
         description: `Enter only the JWT token`,
         name: 'Authorization',
         bearerFormat: 'Bearer JWT',
@@ -28,7 +26,7 @@ async function bootstrap() {
     )
     .build();
 
-  // OpenAPI (Swagger) doc/playground
+  // OpenAPI (Swagger) sandbox
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory, {
     swaggerOptions: {

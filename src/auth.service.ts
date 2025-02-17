@@ -1,3 +1,5 @@
+// Purpose: Service for handling authentication and authorization.
+
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 

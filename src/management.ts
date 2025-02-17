@@ -1,3 +1,5 @@
+// Purpose: Entry point for the management commands.
+
 import { AppModule } from './app.module';
 import { CommandFactory } from 'nest-commander';
 

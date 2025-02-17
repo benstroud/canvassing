@@ -1,6 +1,4 @@
-/**
- * Provides the repository for each db model entity.
- */
+// DI Service providers
 
 import { DataSource } from 'typeorm';
 import {
@@ -63,7 +61,7 @@ export const entityRepositoriesProviders = [
     inject: [DATA_SOURCE],
   },
 ];
-
+// PubSub provider for GraphQL subscriptions
 export const graphQLPubSubProvider = {
   provide: PUB_SUB,
   useValue: new PubSub(),

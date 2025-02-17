@@ -1,3 +1,5 @@
+// Address TypeORM entity
+
 import {
   Column,
   Entity,
@@ -39,7 +41,8 @@ export class Address {
   @Field()
   zipcode: string;
 
-  // Many-to-many relationship with AddressList.
+  // An Address can belong to one or more AddressLists. An AddressList can have
+  // one or more Addresses.
   @ManyToMany(() => AddressList, (addressList) => addressList.addresses)
   @Field(() => [AddressList])
   addressLists: AddressList[];
@@ -49,6 +52,8 @@ export class Address {
   answers: Answer[];
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a request to create an Address. Descriptions appear in Swagger UI.
 export class CreateAddressDto {
   @ApiProperty({ description: 'The first line of the address' })
   address1: string;

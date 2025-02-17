@@ -1,3 +1,5 @@
+// Answer TypeORM entity
+
 import { ApiProperty } from '@nestjs/swagger';
 import { Question } from './question.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -8,6 +10,9 @@ import { Address } from './address.entity';
 
 @Entity()
 @ObjectType()
+// Uncomment the @Unique decorator to enforce that only a single answer can be
+// submitted for a given question, address list, user, and address.
+//
 // @Unique(['question', 'addressList', 'user', 'address'])
 export class Answer {
   @PrimaryGeneratedColumn()
@@ -40,14 +45,16 @@ export class Answer {
   @Field(() => Address)
   address: Address;
 
-  // For convenience, store inline JSON with the assocaited entities at the time of answer submission.
+  // For convenience, store inline JSON with the assocaited entities at the time
+  // of answer submission.
   @Column('text')
   @Field()
   inlineReferenceData: string;
 }
 
 // Data transfer object (DTO) with the fields that the client can set when
-// making a request to create an Answer.
+// making a request to create an Answer (by admin). Descriptions appear in
+// Swagger UI.
 export class CreateAnswerDto {
   @ApiProperty({ description: 'The answer text' })
   text: string;
@@ -78,6 +85,9 @@ export class CreateAnswerDto {
   addressId: number;
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a request to submit an Answer (by user). Descriptions appear in
+// Swagger UI.
 @InputType()
 export class SubmitAnswerDto {
   @ApiProperty({

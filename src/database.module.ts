@@ -1,3 +1,5 @@
+// DI module for database access
+
 import { Module } from '@nestjs/common';
 import { databaseProviders } from './database.providers';
 

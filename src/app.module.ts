@@ -1,8 +1,6 @@
+// Purpose: The main application module for the NestJS application.
+
 import { Module } from '@nestjs/common';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-/* import { AppController } from './app.controller';
-import { AppService } from './app.service'; */
-// import { DATA_SOURCE } from './constants';
 import { DatabaseModule } from './database.module';
 
 import {
@@ -44,10 +42,8 @@ import { Context } from 'graphql-ws';
               ' extra:',
               extra,
             );
-            // TODO: Authenticate GraphQL WebSocket connection...
-            // user validation will remain the same as in the example above
-            // when using with graphql-ws, additional context value should be stored in the extra field
-            // extra.user = { user: {} };
+            // TODO: Authenticate GraphQL WebSocket connection:
+            // https://docs.nestjs.com/graphql/subscriptions#authentication-over-websockets
           },
         },
       },
@@ -72,7 +68,6 @@ import { Context } from 'graphql-ws';
     ...entityRepositoriesProviders,
     // Provides PUB_SUB for publishing updates for GraphQL subscriptions
     graphQLPubSubProvider,
-
     // The service routines supporting the REST API and GraphQL resolvers
     AppService,
     // The GraphQL resolvers
@@ -84,13 +79,7 @@ import { Context } from 'graphql-ws';
     ...SeedCommand.registerWithSubCommands(),
     //   - To generate a JWT token for a user.
     ...DevTokenCommand.registerWithSubCommands(),
-    // Enable JWT authentication globally.
-    // APP_GUARD is a special token that tells Nest to use JwtAuthGuard globally.
-    // The @Public() decorator can be used to allow public access to specific routes.
-    /* {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    }, */
   ],
+  //exports: [graphQLPubSubProvider],
 })
 export class AppModule {}

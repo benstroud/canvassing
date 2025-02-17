@@ -1,3 +1,5 @@
+// Questionnaire TypeORM entity
+
 import {
   Column,
   Entity,
@@ -39,6 +41,8 @@ export class Questionnaire {
   addressLists: AddressList[];
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a request to create a Questionnaire. Descriptions appear in Swagger UI.
 export class CreateQuestionnaireDto {
   @ApiProperty({
     description: 'The organization ID that controls the questionnaire',

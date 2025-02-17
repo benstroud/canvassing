@@ -1,3 +1,5 @@
+// AddressList TypeORM entity
+
 import {
   Column,
   Entity,
@@ -48,13 +50,16 @@ export class AddressList {
   @Field(() => [Questionnaire])
   questionnaires: Questionnaire[];
 
-  // Many-to-many relationship between AddressList and Address.
+  // Each AddressList can have one or more Addresses. An Address can belong to
+  // one or more AddressLists.
   @ManyToMany(() => Address, (address) => address.addressLists)
   @JoinTable()
   @Field(() => [Address])
   addresses: Address[];
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a request to create an AddressList. Descriptions appear in Swagger UI.
 export class CreateAddressListDto {
   @ApiProperty({
     description: 'The organization ID that controls the address list',

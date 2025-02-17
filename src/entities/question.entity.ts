@@ -1,3 +1,5 @@
+// Question TypeORM entity
+
 import {
   Column,
   Entity,
@@ -35,6 +37,8 @@ export class Question {
   answers: Answer[];
 }
 
+// Data transfer object (DTO) with the fields that the client can set when
+// making a request to create a Question. Descriptions appear in Swagger UI.
 export class CreateQuestionDto {
   @ApiProperty({
     description: 'The questionnaire ID that controls the question',

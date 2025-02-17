@@ -1,8 +1,11 @@
-// With this in place, we can create a @Roles() decorator. This decorator allows
-// specifying what roles are required to access specific resources.
+// Provides the Roles decorator for verifying user roles. Use to decorate route
+// handlers or controllers.
+// See: https://docs.nestjs.com/security/authorization
+// "With this in place, we can create a @Roles() decorator. This decorator allows
+// specifying what roles are required to access specific resources."
 
 import { SetMetadata } from '@nestjs/common';
-import { UserRole, ROLES_KEY } from 'src/constants';
+import { UserRole, ROLES_KEY } from '../constants';
 
 /**
  * A decorator that assigns roles to a route handler or controller.

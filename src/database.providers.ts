@@ -1,3 +1,5 @@
+// DI Service providers for database access
+
 import { DataSource, DataSourceOptions } from 'typeorm';
 import {
   DEFAULT_POSTGRES_DB,
@@ -54,26 +56,3 @@ export const databaseProviders = [
     },
   },
 ];
-
-// To inject the provider in a service or controller, use the @Inject decorator with DATA_SOURCE token
-// Example:
-// import { Inject } from '@nestjs/common';
-// import { DATA_SOURCE } from './constants';
-// import { DataSource } from 'typeorm';
-
-// export class SomeService {
-//   constructor(
-//     @Inject(DATA_SOURCE) private readonly dataSource: DataSource,
-//   ) {}
-// }
-
-// To reference DATA_SOURCE in app.module.ts, include it in the providers array
-// Example:
-// import { Module } from '@nestjs/common';
-// import { databaseProviders } from './database.providers';
-
-// @Module({
-//   providers: [...databaseProviders],
-//   exports: [...databaseProviders],
-// })
-// export class AppModule {}

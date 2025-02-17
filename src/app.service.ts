@@ -1,3 +1,6 @@
+// Purpose: Service layer for the application. Contains all business logic and
+// data access logic.
+
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   ADDRESSES_REPOSITORY,
@@ -7,6 +10,7 @@ import {
   QUESTIONS_REPOSITORY,
   ANSWERS_REPOSITORY,
   USERS_REPOSITORY,
+  PUB_SUB,
 } from './constants';
 import { Repository } from 'typeorm';
 
@@ -27,6 +31,7 @@ import { CreateQuestionDto, Question } from './entities/question.entity';
 import { Answer } from './entities/answer.entity';
 import { User } from './entities/user.entity';
 import { UserRole } from './constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class AppService {
@@ -45,12 +50,13 @@ export class AppService {
     private answersRepository: Repository<Answer>,
     @Inject(USERS_REPOSITORY)
     private usersRepository: Repository<User>,
-    /* @Inject(PUB_SUB)
-    private pubSub: PubSub, */
+    @Inject(PUB_SUB)
+    private pubSub: PubSub,
   ) {}
 
   //#region Users CRUD and auth
 
+  // Create user
   async createUser(
     username: string,
     password: string,
@@ -64,6 +70,7 @@ export class AppService {
     return this.usersRepository.save(user);
   }
 
+  // Find user by id
   async findUserById(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id: id },
@@ -82,6 +89,7 @@ export class AppService {
     return user;
   }
 
+  // Find user by username, checking password.
   async findUserValidatingPassword(
     username: string,
     password: string,
@@ -101,6 +109,7 @@ export class AppService {
 
   //#region Organizations CRUD
 
+  // Create organization
   async createOrganization(
     createOrganizationDto: CreateOrganizationDto,
   ): Promise<Organization> {
@@ -109,15 +118,18 @@ export class AppService {
     return this.organizationsRepository.save(organization);
   }
 
+  // Delete organization
   async deleteOrganization(id: number): Promise<void> {
     await this.organizationsRepository.delete(id);
   }
 
+  // Find all organizations
   // TODO: Paging. Guard access here or in controller?
   async findOrganizations(): Promise<Organization[]> {
     return this.organizationsRepository.find();
   }
 
+  // Find organization by id
   async findOrganization(id: number): Promise<Organization> {
     const organization = await this.organizationsRepository.findOne({
       where: { id: id },
@@ -128,24 +140,11 @@ export class AppService {
     }
     return organization;
   }
-
-  // TODO - fully switch to User+JWT
-  /* async findOrganizationByApiKey(apiKey: string): Promise<Organization> {
-    const organization = await this.organizationsRepository.findOneBy({
-      apiKey: apiKey,
-    });
-    if (!organization) {
-      throw new NotFoundException(
-        `Organization with API key ${apiKey} not found`,
-      );
-    }
-    return organization;
-  }
- */
   // #endregion Organizations CRUD
 
   //#refion Address Lists CRUD
 
+  // Create address list
   async createAddressList(
     createAddressListDto: CreateAddressListDto,
   ): Promise<AddressList> {
@@ -155,15 +154,18 @@ export class AppService {
     return this.addressListsRepository.save(addressList);
   }
 
+  // Delete address list.
   async deleteAddressList(id: number): Promise<void> {
     await this.addressListsRepository.delete(id);
   }
 
+  // Find all address lists.
   // TODO: Paging
   async findAddressLists(): Promise<AddressList[]> {
     return this.addressListsRepository.find();
   }
 
+  // Find address list by id.
   async findAddressList(id: number): Promise<AddressList> {
     const addressList = await this.addressListsRepository.findOne({
       where: { id: id },
@@ -179,6 +181,7 @@ export class AppService {
 
   // #region Questionnaires CRUD
 
+  // Create questionnaire.
   async createQuestionnaire(
     createQuestionnaireDto: CreateQuestionnaireDto,
   ): Promise<Questionnaire> {
@@ -189,15 +192,17 @@ export class AppService {
     return this.questionnairesRepository.save(questionnaire);
   }
 
+  // Delete questionnaire.
   async deleteQuestionnaire(id: number): Promise<void> {
     await this.questionnairesRepository.delete(id);
   }
 
-  // TODO: Paging.
+  // Find questionnaires.
   async findQuestionnaires(): Promise<Questionnaire[]> {
     return this.questionnairesRepository.find();
   }
 
+  // find questionnaire by id.
   async findQuestionnaire(id: number): Promise<Questionnaire> {
     const questionnaire = await this.questionnairesRepository.findOne({
       where: { id: id },
@@ -213,6 +218,7 @@ export class AppService {
 
   // #region Questions CRUD
 
+  // Create question.
   async createQuestion(
     createQuestionDto: CreateQuestionDto,
   ): Promise<Question> {
@@ -231,14 +237,18 @@ export class AppService {
     return this.questionsRepository.save(question);
   }
 
+  // Delete question.
   async deleteQuestion(id: number): Promise<void> {
     await this.questionsRepository.delete(id);
   }
 
+  // Find all questions.
+  // TODO paging
   async findQuestions(): Promise<Question[]> {
     return this.questionsRepository.find();
   }
 
+  // Find question by id.
   async findQuestion(id: number): Promise<Question> {
     const question = await this.questionsRepository.findOneBy({ id: id });
     if (!question) {
@@ -251,6 +261,9 @@ export class AppService {
 
   // #region Questions submit answers
 
+  // Submit answer to a question.
+  // Publishes the Answer to the newAnswer GraphQL subscription topic notify
+  // subscribers of new answer.
   async submitAnswer(
     userId: number,
     questionId: number,
@@ -366,7 +379,15 @@ export class AppService {
         name: question.questionnaire.organization.name,
       },
     });
-    await this.answersRepository.save(answerToStore);
+    const answer = await this.answersRepository.save(answerToStore);
+    console.info(
+      'Signalling to subscribers that an answer was added. answer:',
+      answer,
+    );
+    await this.pubSub.publish('newAnswer', {
+      newAnswer: answer,
+    });
+
     return answerToStore;
   }
   //#endregion Questions submit answers
