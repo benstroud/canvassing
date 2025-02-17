@@ -210,6 +210,7 @@ query MyAccount {
           answers {
             id
             text
+            
           }
         }  
       }
@@ -223,6 +224,23 @@ query MyAccount {
           state
           zipcode
         }
+      }
+    }
+    answers {
+      id
+      text
+      inlineReferenceData
+      
+      address {
+        id
+        address1
+          address2
+          city
+          state
+          zipcode
+      }
+      question {
+        text
       }
     }
   }
@@ -331,6 +349,11 @@ $ curl -X 'GET' \
   'http://localhost:3000/admin/addresslists' \
   -H 'accept: */*' -H "Authorization: Bearer $JWT_TOKEN"
 [{"id":1,"title":"Address List 1","organizationId":1},{"id":2,"title":"Address List 2","organizationId":1},{"id":3,"title":"Address List 3","organizationId":1}]
+
+$ curl -X 'GET' \
+  'http://localhost:3000/admin/addresses' \
+  -H 'accept: */*' -H "Authorization: Bearer $JWT_TOKEN"
+...
 
 ```
 

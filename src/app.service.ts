@@ -81,6 +81,9 @@ export class AppService {
         'organizations.questionnaires.questions.answers',
         'organizations.addressLists',
         'organizations.addressLists.addresses',
+        'answers',
+        'answers.question',
+        'answers.address',
       ],
     });
     if (!user) {
