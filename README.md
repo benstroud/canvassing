@@ -85,8 +85,6 @@ mmdc -i diagram.mermaid -o architecture_diagram.png -t dark -b transparent
 
 ![Database Model](./readme_assets/database_model_diagram.png)
 
-## Overview
-
 ## Demo
 
 I have developed the application using Node.js version v20.18.2. After [downloading](https://nodejs.org/en/download) and installing the latest v20.18 LTS version, next install the project dependencies:
@@ -127,14 +125,14 @@ Then, you can visit the following in your browser to explore the services, which
 include a REST API and a GraphQL API:
 
 * OpenAPI/Swagger UI: <http://localhost:3000/api>
-* GraphQL Sandbox UI: <Http://Localhost:3000/Graphql>
+* GraphQL Sandbox UI: <Http://localhost:3000/graphql>
 
 ### Authentication
 
-REST and GRAPHQL requests must be authenticated with a JWT token. The token should be included in HTTP requests with header name `Authorization` and value formatted as `Bearer <JWT_TOKEN>`.
+REST and GraphQL requests must be authenticated with a JWT token. The token should be included in HTTP requests with header name `Authorization` and value formatted as `Bearer <JWT_TOKEN>`.
 
-For the demo and development, we can generate auth
-tokens using a command line utility. 
+For demo and development, we can generate auth tokens using a command line
+utility.
 
 (Note: The `auth/login` REST endpoint would typically be used to obtain a JWT
 token by logging in with username and password.)
@@ -231,7 +229,7 @@ query MyAccount {
 }
 ```
 
-### The submitAnswer Mutation
+#### The submitAnswer Mutation
 
 Also using the `demo` user, you can submit a new answer. You will need to obtain
 valid associated record ids from the demo database.
@@ -252,7 +250,7 @@ mutation Mutation($submitAnswerDto: SubmitAnswerDto!) {
 }
 ```
 
-### The newAnswer Subscription
+#### The newAnswer Subscription
 
 Using GraphQL's WebSocket Subscription capability, the front end can receive
 real time notifications when an answer has been submitted. Again, using the
@@ -297,9 +295,13 @@ subscription Subscription {
 
 ![GraphQL Subscription event through WebSocket](./readme_assets/graphql_sandbox_subscriptions.png)
 
-## Example REST requests
+### Example REST requests
 
-In addition to the Swagger UI, you may find it more convenient to use `curl`. Here are some examples:
+Using the Swagger UI, you can set the authorization token and then interact with
+the local development server.
+
+In addition to the Swagger UI, you may find it convenient to use `curl`. Here
+are some examples:
 
 ```bash
 # Seed demo database
@@ -332,9 +334,7 @@ $ curl -X 'GET' \
 
 ```
 
-
-
-# Ben's notes
+## Ben's notes
 
 ```bash
 node --version # v20.18.2
@@ -364,9 +364,9 @@ npm i graphql-ws --save
 npm i graphql-subscriptions --save
 ```
 
-## Development Environment
+### Development Environment
 
-### Sqlite3 development database
+#### Sqlite3 development database
 
 For convenience, setting the `NODE_ENV` environment variable to `dev` will
 configure the app to use a SQLite database file
@@ -374,7 +374,7 @@ configure the app to use a SQLite database file
 recommended for production. See <./src/database.providers.ts> for the configuration of
 each.
 
-### PostgreSQL locally for development
+#### PostgreSQL locally for development
 
 [Docker compose](https://docs.docker.com/compose/) is utilized for local development to provide a development PostgreSQL database. The <./docker-compose.yml> file sets the database and user name, and password default. You can override the password by setting the `POSTGRES_PASSWORD` environment variable.
 
@@ -383,7 +383,7 @@ each.
 $ docker-compose up -d
 ```
 
-## Commands
+### Commands
 
 ```bash
 # development
@@ -401,12 +401,10 @@ $ npm run start:debug
 $ npm run test
 ```
 
-## Nest.js -- Deployment
+### Nest.js -- Deployment
 
 [Nest deployment documentation](https://docs.nestjs.com/deployment)
 
-
-
-## Nest.js -- Resources
+### Nest.js -- Resources
 
 Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
