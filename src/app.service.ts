@@ -7,7 +7,6 @@ import {
   QUESTIONS_REPOSITORY,
   ANSWERS_REPOSITORY,
   USERS_REPOSITORY,
-  PUB_SUB,
 } from './constants';
 import { Repository } from 'typeorm';
 
@@ -28,7 +27,6 @@ import { CreateQuestionDto, Question } from './entities/question.entity';
 import { Answer } from './entities/answer.entity';
 import { User } from './entities/user.entity';
 import { UserRole } from './constants';
-import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class AppService {
@@ -47,8 +45,8 @@ export class AppService {
     private answersRepository: Repository<Answer>,
     @Inject(USERS_REPOSITORY)
     private usersRepository: Repository<User>,
-    @Inject(PUB_SUB)
-    private pubSub: PubSub,
+    /* @Inject(PUB_SUB)
+    private pubSub: PubSub, */
   ) {}
 
   //#region Users CRUD and auth
@@ -108,9 +106,6 @@ export class AppService {
   ): Promise<Organization> {
     const organization = new Organization();
     organization.name = createOrganizationDto.name;
-    await this.pubSub.publish('organizationCreated', {
-      organizationCreated: organization,
-    });
     return this.organizationsRepository.save(organization);
   }
 
@@ -263,7 +258,7 @@ export class AppService {
     addressListId: number,
     addressId: number,
     answerText: string,
-  ) {
+  ): Promise<Answer> {
     // Validate user exists
     const user = await this.usersRepository.findOneBy({ id: userId });
     if (!user) {
@@ -277,7 +272,11 @@ export class AppService {
     // Validate question exists and belongs to a questionnaire
     const question = await this.questionsRepository.findOne({
       where: { id: questionId },
-      relations: ['questionnaire', 'questionnaire.organization'],
+      relations: [
+        'questionnaire',
+        'questionnaire.organization',
+        'questionnaire.organization.questionnaires',
+      ],
     });
 
     if (!question) {
@@ -314,6 +313,7 @@ export class AppService {
     // Validate address list belongs to the organization
     const addressList = await this.addressListsRepository.findOne({
       where: { id: addressListId, organizationId: organizationId },
+      relations: ['organization', 'organization.questionnaires'],
     });
     if (!addressList) {
       throw new NotFoundException(
@@ -367,6 +367,7 @@ export class AppService {
       },
     });
     await this.answersRepository.save(answerToStore);
+    return answerToStore;
   }
   //#endregion Questions submit answers
 }

@@ -1,12 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Question } from './question.entity';
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Field, ID, ObjectType, InputType, Int } from '@nestjs/graphql';
 import { AddressList } from './addresslist.entity';
 import { User } from './user.entity';
@@ -14,7 +8,7 @@ import { Address } from './address.entity';
 
 @Entity()
 @ObjectType()
-@Unique(['question', 'addressList', 'user', 'address'])
+// @Unique(['question', 'addressList', 'user', 'address'])
 export class Answer {
   @PrimaryGeneratedColumn()
   @Field(() => ID)

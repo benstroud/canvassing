@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   ParseIntPipe,
   Post,
@@ -30,16 +31,18 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { RESTCurrentUserId, AuthGuard } from './auth/jwt-auth.guard';
 import { SignInDto, User } from './entities/user.entity';
 import { CreateQuestionDto, Question } from './entities/question.entity';
-import { BEARER_AUTH_NAME, UserRole } from './constants';
+import { BEARER_AUTH_NAME, PUB_SUB, UserRole } from './constants';
 import { Roles } from './auth/roles.decorator';
 import { RolesGuard } from './auth/roles.guard';
 import { SubmitAnswerDto } from './entities/answer.entity';
+import { PubSub } from 'graphql-subscriptions';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly authService: AuthService,
+    @Inject(PUB_SUB) private pubSub: PubSub,
   ) {}
 
   @Get('')
@@ -90,7 +93,7 @@ export class AppController {
     userId: number,
     @Body() submitAnswerDto: SubmitAnswerDto,
   ) {
-    await this.appService.submitAnswer(
+    const answer = await this.appService.submitAnswer(
       userId,
       submitAnswerDto.questionId,
       submitAnswerDto.questionnaireId,
@@ -98,6 +101,16 @@ export class AppController {
       submitAnswerDto.addressId,
       submitAnswerDto.answerText,
     );
+    console.info(
+      'Signalling to subscribers that an answer was added. answer:',
+      answer,
+    );
+
+    await this.pubSub.publish('newAnswer', {
+      //testSubscription: 'Hello, world!',
+      newAnswer: answer,
+    });
+
     return { message: 'Answer submitted successfully' };
   }
 

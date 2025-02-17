@@ -22,6 +22,7 @@ import {
   DevTokenCommand,
   SeedCommand,
 } from './commands/management.command';
+import { Context } from 'graphql-ws';
 
 @Module({
   imports: [
@@ -33,24 +34,24 @@ import {
       // Using Apollo Server
       driver: ApolloDriver,
       // Enable GraphQL Subscriptions support
-      installSubscriptionHandlers: true,
       subscriptions: {
-        'subscriptions-transport-ws': {
-          path: '/graphql',
+        'graphql-ws': {
+          onConnect: (context: Context<any>) => {
+            const { connectionParams, extra } = context;
+            console.log(
+              'onConnect connectionParams:',
+              connectionParams,
+              ' extra:',
+              extra,
+            );
+            // TODO: Authenticate GraphQL WebSocket connection...
+            // user validation will remain the same as in the example above
+            // when using with graphql-ws, additional context value should be stored in the extra field
+            // extra.user = { user: {} };
+          },
         },
-        // TODO: implement the following to authenticate GraphQL subscription requests.
-        // https://docs.nestjs.com/graphql/subscriptions#authentication-over-websockets
-        /* onConnect: (connectionParams) => {
-          const authToken = connectionParams.authToken;
-          if (!isValid(authToken)) {
-            throw new Error('Token is not valid');
-          }
-          // extract user information from token
-          const user = parseToken(authToken);
-          // return user info to add them to the context later
-          return { user };
-        }, */
       },
+
       // GraphQL schema file will be generated here
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       // Debugging enabled for stack traces. Disable for production.
@@ -71,6 +72,7 @@ import {
     ...entityRepositoriesProviders,
     // Provides PUB_SUB for publishing updates for GraphQL subscriptions
     graphQLPubSubProvider,
+
     // The service routines supporting the REST API and GraphQL resolvers
     AppService,
     // The GraphQL resolvers

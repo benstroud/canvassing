@@ -5,12 +5,15 @@ import {
   Args,
   ObjectType,
   Field,
+  Subscription,
 } from '@nestjs/graphql';
 import { AppService } from './app.service';
 import { User } from './entities/user.entity';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { GqlCurrentUserId, GqlAuthGuard } from './auth/jwt-auth.guard';
-import { SubmitAnswerDto } from './entities/answer.entity';
+import { Answer, SubmitAnswerDto } from './entities/answer.entity';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from './constants';
 
 @ObjectType()
 export class UserResponseDto {
@@ -23,7 +26,11 @@ export class UserResponseDto {
 
 @Resolver()
 export class CanvassingResolver {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    @Inject(PUB_SUB)
+    private pubSub: PubSub,
+  ) {}
 
   @UseGuards(GqlAuthGuard)
   @Query(() => User, { name: 'myAccount' })
@@ -61,5 +68,12 @@ export class CanvassingResolver {
       console.error('submitAnswer error:', error);
       return 'Error';
     }
+  }
+
+  @Subscription(() => Answer, {
+    name: 'newAnswer',
+  })
+  newAnswer() {
+    return this.pubSub.asyncIterableIterator('newAnswer');
   }
 }

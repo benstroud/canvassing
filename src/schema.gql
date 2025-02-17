@@ -79,3 +79,7 @@ input SubmitAnswerDto {
   questionId: Int!
   answerText: String!
 }
+
+type Subscription {
+  newAnswer: Answer!
+}

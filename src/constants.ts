@@ -10,6 +10,7 @@ export const DEV_SQLITE_DB = 'canvassing-development.sqlite';
 export const DATA_SOURCE = 'DATA_SOURCE';
 // Key name for GraphQL pub/sub dependency injection.
 export const PUB_SUB = 'PUB_SUB';
+
 // Key names for TypeORM entity repository dependency injection.
 export const ORGANIZATIONS_REPOSITORY = 'ORGANIZATIONS_REPOSITORY';
 export const ADDRESSES_REPOSITORY = 'ADDRESSES_REPOSITORY';
