@@ -1,5 +1,7 @@
 # Canvassing API prototype
 
+[https://github.com/benstroud/canvassing](https://github.com/benstroud/canvassing)
+
 Objective: Develop a backend API to support a civic canvassing service. This API
 will be used by both a mobile application and a website to facilitate the
 delivery of questionnaires and the capture of responses on a per household
@@ -44,9 +46,9 @@ updates when canvassing answers are submitted. If the use of GraphQL was
 determined to not be ideal, it should be straightforward to instead work
 directly with WebSockets or SSE.
 
-The applications GraphQL and REST schemas were implemented code-first through
-the patterns supported by NestJS. The [src/schema.gql](./src/schema.gql) GraphQL schema
-is auto-generated on project build.
+The application's GraphQL schema and REST routes were implemented code-first
+through the patterns supported by NestJS. The [src/schema.gql](./src/schema.gql)
+GraphQL schema is auto-generated on project build.
 
 I decided to use a relational database model, which NestJS supports through
 [TypeORM](https://typeorm.io/). This library along with NestJS rely heavily on
@@ -60,10 +62,10 @@ obtain a JWT token to be included in REST/GraphQL requests.
 
 ### Other considerations
 
-I also considered Python ecosystem options, where I have more experience, but
-decided to go with TypeScript/NestJS to gain more experience. With more time, I
-would have likely further prototyped with other languages to compare/contrast.
-The Go programming language could provide a nice solution.
+I also considered Python ecosystem options, where I have implemented more
+projects, but decided to go with TypeScript/NestJS to gain more experience. With
+more time, I would have likely further prototyped with other languages to
+compare/contrast. The Go programming language could provide a nice solution.
 
 I also considered a solution utilizing AWS infrastructure components such as API
 Gateway and/or AppSync, but decided it was best to provide a more
@@ -356,78 +358,3 @@ $ curl -X 'GET' \
 ...
 
 ```
-
-## Ben's notes
-
-```bash
-node --version # v20.18.2
-npm --version # v10.8.2
-alias nest='npx @nestjs/cli@11.0.2'
-nest --version # 11.0.2
-
-nest new canvassing
-npm i
-npm install typeorm --save
-npm install reflect-metadata --save
-npm install @types/node --save-dev
-npm install pg --save
-npm install --save @nestjs/typeorm typeorm pg
-npm install -g @mermaid-js/mermaid-cli
-npm install --save @nestjs/swagger
-npm i @nestjs/graphql @nestjs/apollo @apollo/server graphql --save
-npm i --save bcrypt
-# I initially tried to utilize the passport.js library but defaulted to the Nest authentication doc steps...
-# npm install --save @nestjs/passport passport passport-local
-# npm install --save-dev @types/passport-local
-#npm install --save @nestjs/jwt passport-jwt
-#npm install --save-dev @types/passport-jwt
-npm install --save sqlite3
-npm install nest-commander --save
-npm i graphql-ws --save
-npm i graphql-subscriptions --save
-```
-
-### Development Environment
-
-#### Sqlite3 development database
-
-For convenience, setting the `NODE_ENV` environment variable to `dev` will
-configure the app to use a SQLite database file
-(./canvassing-development.sqlite) instead of PostgreSQL which would be
-recommended for production. See <./src/database.providers.ts> for the configuration of
-each.
-
-#### PostgreSQL locally for development
-
-[Docker compose](https://docs.docker.com/compose/) is utilized for local development to provide a development PostgreSQL database. The <./docker-compose.yml> file sets the database and user name, and password default. You can override the password by setting the `POSTGRES_PASSWORD` environment variable.
-
-```bash
-# Start PostgreSQL locally, in the background.
-$ docker-compose up -d
-```
-
-### Commands
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# watch mode + debugging
-$ npm run start:debug
-
-## Nest.js - Run tests
-
-# unit tests
-$ npm run test
-```
-
-### Nest.js -- Deployment
-
-[Nest deployment documentation](https://docs.nestjs.com/deployment)
-
-### Nest.js -- Resources
-
-Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
