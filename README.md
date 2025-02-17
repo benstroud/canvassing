@@ -45,8 +45,8 @@ determined to not be ideal, it should be straightforward to instead work
 directly with WebSockets or SSE.
 
 The applications GraphQL and REST schemas were implemented code-first through
-the patterns supported by NestJS. The <./schema.gql> GraphQL schema is
-auto-generated on project build.
+the patterns supported by NestJS. The [src/schema.gql](./src/schema.gql) GraphQL schema
+is auto-generated on project build.
 
 I decided to use a relational database model, which NestJS supports through
 [TypeORM](https://typeorm.io/). This library along with NestJS rely heavily on
