@@ -1,6 +1,9 @@
-# Canvassing API
+# Canvassing API prototype
 
-Objective: Develop a backend API to support a civic canvassing service. This API will be used by both a mobile application and a website to facilitate the delivery of questionnaires and the capture of responses on a per household basis.
+Objective: Develop a backend API to support a civic canvassing service. This API
+will be used by both a mobile application and a website to facilitate the
+delivery of questionnaires and the capture of responses on a per household
+basis.
 
 Scenario: A typical user of this service is a volunteer performing door-to-door
 canvassing efforts for an organization. The volunteer selects a postal address
@@ -17,10 +20,6 @@ removed from the list for all users.
 * Administrative Updates: Organization administrators can add or remove households from
 the shared list, and updates must propagate in real-time to all logged-in users.
 * Single Record: Only one set of answers per household is needed.
-
-## Architecture Diagram
-
-TODO
 
 ## Design Decisions
 
@@ -59,51 +58,64 @@ manipulate data while non-admin users are collecting answers to questionnaires.
 The implementation stores a User entity supporting password authentication to
 obtain a JWT token to be included in REST/GraphQL requests.
 
+### Other considerations
+
+I also considered Python ecosystem options, where I have more experience, but
+decided to go with TypeScript/NestJS to gain more experience. With more time, I
+would have likely further prototyped with other languages to compare/contrast.
+The Go programming language could provide a nice solution.
+
+I also considered a solution utilizing AWS infrastructure components such as API
+Gateway and/or AppSync, but decided it was best to provide a more
+straightforward code repository that could be demonstrated more easily and run
+locally.
+
+## Architecture Diagram
+
+![Architecture Diagram](./architecture_diagram.png)
+
+To generate the diagram from [diagram.mermaid](./diagram.mermaid):
+
+```shell
+npm install -g @mermaid-js/mermaid-cli
+mmdc -i diagram.mermaid -o architecture_diagram.png -t dark -b transparent
+```
+
 ## Database Model
 
 ![Database Model](./readme_assets/database_model_diagram.png)
-
-
-## Description
-
-### Diagram
-
-```mermaid
-flowchart TD
-    A[Mobile App]
-    B[Website]
-    C[NestJS REST Endpoints]
-    D[NestJS GraphQL Endpoints]
-    E[Database]
-
-    A -->|Requests| C
-    B -->|Requests| C
-    A -->|Requests| D
-    B -->|Requests| D
-    C -->|Database queries| E
-    C -->|Publishes events| D
-    D -->|Pushes GraphQL/WS Subscription updates| A
-    D -->|Pushes GraphQL/WS Subscription updates| B
-```
 
 ## Overview
 
 ## Demo
 
+I have developed the application using Node.js version v20.18.2. After [downloading](https://nodejs.org/en/download) and installing the latest v20.18 LTS version, next install the project dependencies:
+
+```bash
+$ node --version 
+v20.18.x
+$ npm i
+...
+$ npx @nestjs/cli@11.0.2 --version
+11.0.2
+$ alias nest='npx @nestjs/cli@11.0.2'
+```
+
 For demo purposes, we'll use a local SQLite database instead of a database
-server, but the application can also be configured to use PostgreSQL as the
-database server. The following command will build the application and generate
-demo data stored to a canvassing-development.sqlite file in the project
-directory.
+server, but the application can also be configured to use PostgreSQL or other
+RDBMS.
+
+The following command will build the application and generate demo data stored
+to a canvassing-development.sqlite file in the project directory.
 
 ```bash
 npm run build && rm ./canvassing-development.sqlite; npm run manage:dev seed
 ```
 
 After the database has been seeded, two users exist. 1) `admin` which has
-administrative rights and 2) `demo` which is a normal user. Additional fake
-entity data has been generated and stored to the database to make it easier to
-test features.
+administrative rights and 2) `demo` which is a normal user. For both, the
+initial password is the same as the username. Additional fake entity data has
+been generated and stored to the database to make it easier to test features.
 
 You can then start the development server:
 
@@ -114,16 +126,18 @@ npm run start:dev
 Then, you can visit the following in your browser to explore the services, which
 include a REST API and a GraphQL API:
 
-- OpenAPI/Swagger UI: <http://localhost:3000/api>
-- GraphQL Sandbox UI: <Http://Localhost:3000/Graphql>
+* OpenAPI/Swagger UI: <http://localhost:3000/api>
+* GraphQL Sandbox UI: <Http://Localhost:3000/Graphql>
 
 ### Authentication
 
 REST and GRAPHQL requests must be authenticated with a JWT token. The token should be included in HTTP requests with header name `Authorization` and value formatted as `Bearer <JWT_TOKEN>`.
 
-The `auth/login` REST endpoint can be used to obtain a JWT token by logging in
-with username and password. For the demo and development, we can generate auth
-tokens using a command line utility...
+For the demo and development, we can generate auth
+tokens using a command line utility. 
+
+(Note: The `auth/login` REST endpoint would typically be used to obtain a JWT
+token by logging in with username and password.)
 
 ### Admin user token generation
 
@@ -131,7 +145,7 @@ To generate a JWT token for the `admin` user that was generated when seeing the 
 
 ```bash
 $ npm run manage:dev devtoken admin
-Bearer ...
+Bearer <JWT_TOKEN>
 ```
 
 ### Non-admin user token generation
@@ -140,7 +154,7 @@ To generate a JWT token for the non-admin `demo` user that was generated when se
 
 ```bash
 $ npm run manage:dev devtoken demo
-Bearer ...
+Bearer <JWT_TOKEN>
 ```
 
 Next, copy/save the generated tokens to then use with the Swagger and GraphQL
@@ -151,17 +165,7 @@ different token value:
 Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2NzI2NDgsImV4cCI6MTc0NzQ0ODY0OH0.iO89OCf-1avukhGULLtU6sP9brfA6zyhNpuLb_ptKdQ
 ```
 
-The following is a a curl example, utilizing the JWT token in the HTTP request
-header:
-
-```bash
-$ curl -X 'GET' \
-  'http://localhost:3000/partner/organization' \
-  -H 'accept: */*' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwic3ViIjoxLCJpYXQiOjE3Mzk2NzI2NDgsImV4cCI6MTc0NzQ0ODY0OH0.iO89OCf-1avukhGULLtU6sP9brfA6zyhNpuLb_ptKdQ'
-{"id":1,"name":"Gutkowski, Flatley and Douglas"}
-```
-
-#### Setting the auth token for the GraphQL explorer
+### Setting the auth token for the GraphQL explorer
 
 After starting the development server, visit <http://localhost:3000/graphql>. In
 the upper left hand corner you will see a gear icon to open connection settings.
@@ -174,14 +178,22 @@ for the demo.
 ![GraphQL Playground Connection Settings](./readme_assets/gql_playground_connection_settings.png)
 ![GraphQL Playground Bearer Auth](./readme_assets/gql_playground_bearer_auth.png)
 
-#### Setting the auth token for the Swagger REST/OpenAPI explorer
+### Setting the auth token for the Swagger REST/OpenAPI explorer
 
 After starting the development server, visit <http://localhost:3000/api>. In the upper right hand side you will find a button labeled "Authorize". Click that button and then enter the generated token using the pattern `<JWT_TOKEN>`.
 
-![Swagger Playground Auth Settings](./readme_assets/openai_playground_auth_settings.png)
-![GraphQL Playground Bearer Auth](./readme_assets/openai_playground_bearer_entry.png)
+![Swagger Playground Auth Settings](./readme_assets/openapi_playground_auth_settings.png)
+![GraphQL Playground Bearer Auth](./readme_assets/openapi_playground_bearer_entry.png)
 
-#### Example GraphQL queries
+### Example GraphQL queries
+
+#### The MyAccount Query
+
+After setting the `demo` user token in the GraphQL sandbox auth, the following
+GraphQL Query will return the user's account information and associated entities
+which include their organizations, questionnaires, and address lists. You can
+use the GraphQL sandbox to further explore the model attributes for this `demo`
+user.
 
 ```graphql
 query MyAccount {
@@ -219,7 +231,10 @@ query MyAccount {
 }
 ```
 
-##### Submitting a new answer
+### The submitAnswer Mutation
+
+Also using the `demo` user, you can submit a new answer. You will need to obtain
+valid associated record ids from the demo database.
 
 ```graphql
 mutation Mutation($submitAnswerDto: SubmitAnswerDto!) {
@@ -237,7 +252,11 @@ mutation Mutation($submitAnswerDto: SubmitAnswerDto!) {
 }
 ```
 
-##### Subscription to answer creation events
+### The newAnswer Subscription
+
+Using GraphQL's WebSocket Subscription capability, the front end can receive
+real time notifications when an answer has been submitted. Again, using the
+`demo` user:
 
 ```graphql
 subscription Subscription {
@@ -278,7 +297,44 @@ subscription Subscription {
 
 ![GraphQL Subscription event through WebSocket](./readme_assets/graphql_sandbox_subscriptions.png)
 
-## Steps I took setting up the project
+## Example REST requests
+
+In addition to the Swagger UI, you may find it more convenient to use `curl`. Here are some examples:
+
+```bash
+# Seed demo database
+
+# Generate admin user JWT token
+$ npm run manage:dev devtoken admin
+
+> canvassing@0.0.1 manage:dev
+> NODE_ENV=dev node dist/management devtoken admin
+
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3Mzk4MjI4NjEsImV4cCI6MTc0NzU5ODg2MX0.Dpf-OGBD0rKZo4onC_qdmKXVplD24jInU7INne2LImo
+
+## Set token in environment variable
+$ export JWT_TOKEN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3Mzk4MjI4NjEsImV4cCI6MTc0NzU5ODg2MX0.Dpf-OGBD0rKZo4onC_qdmKXVplD24jInU7INne2LImo'
+
+$ curl -X 'GET' \
+  'http://localhost:3000/admin/organizations' \
+  -H 'accept: */*' -H "Authorization: Bearer $JWT_TOKEN"
+[{"id":1,"name":"Armstrong Group"}]
+
+$ curl -X 'GET' \
+  'http://localhost:3000/admin/questions' \
+  -H 'accept: */*' -H "Authorization: Bearer $JWT_TOKEN"
+[{"id":1,"text":"Do you like Generationwhy by Sean Kingston?"},{"id":2,"text":"Do you like Rise Of An Empire by Johnny Horton?"},{"id":3,"text":"Do you like What A Time To Be Alive by Gzuz?"},{"id":4,"text":"Do you like Homerun by Bradley Cooper?"},{"id":5,"text":"Do you like The Sufferer & The Witness by The Go Gos?"},{"id":6,"text":"Do you like Blood Sugar Sex Magik by Dermot Kennedy?"},{"id":7,"text":"Do you like Guerra by The Emotions?"},{"id":8,"text":"Do you like ENR by Ray Parker Jr?"},{"id":9,"text":"Do you like Realer by Bryan Adams?"},{"id":10,"text":"Do you like The Stranger by Juanes?"}]
+
+$ curl -X 'GET' \
+  'http://localhost:3000/admin/addresslists' \
+  -H 'accept: */*' -H "Authorization: Bearer $JWT_TOKEN"
+[{"id":1,"title":"Address List 1","organizationId":1},{"id":2,"title":"Address List 2","organizationId":1},{"id":3,"title":"Address List 3","organizationId":1}]
+
+```
+
+
+
+# Ben's notes
 
 ```bash
 node --version # v20.18.2
@@ -297,13 +353,14 @@ npm install -g @mermaid-js/mermaid-cli
 npm install --save @nestjs/swagger
 npm i @nestjs/graphql @nestjs/apollo @apollo/server graphql --save
 npm i --save bcrypt
+# I initially tried to utilize the passport.js library but defaulted to the Nest authentication doc steps...
 # npm install --save @nestjs/passport passport passport-local
 # npm install --save-dev @types/passport-local
 #npm install --save @nestjs/jwt passport-jwt
 #npm install --save-dev @types/passport-jwt
 npm install --save sqlite3
 npm install nest-commander --save
-# npm i graphql-ws --save
+npm i graphql-ws --save
 npm i graphql-subscriptions --save
 ```
 
@@ -340,9 +397,9 @@ $ npm run start:debug
 
 ## Nest.js - Run tests
 
-```bash
 # unit tests
 $ npm run test
+```
 
 ## Nest.js -- Deployment
 

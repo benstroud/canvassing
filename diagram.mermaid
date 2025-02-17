@@ -1,13 +1,15 @@
 flowchart TD
     A[Mobile App]
     B[Website]
-    C[NestJS API Server]
-    D[WebSocket Gateway]
-    E[PostgreSQL Database]
+    C[NestJS REST Endpoints]
+    D[NestJS GraphQL Endpoints]
+    E[Database]
 
-    A -->|HTTP Requests / WS| C
-    B -->|HTTP Requests / WS| C
+    A -->|Requests| C
+    B -->|Requests| C
+    A -->|Requests| D
+    B -->|Requests| D
     C -->|Database queries| E
     C -->|Publishes events| D
-    D -->|Pushes updates| A
-    D -->|Pushes updates| B
+    D -->|Pushes GraphQL/WS Subscription updates| A
+    D -->|Pushes GraphQL/WS Subscription updates| B
