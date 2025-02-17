@@ -14,7 +14,7 @@ import {
 } from './constants';
 import { Repository } from 'typeorm';
 
-import { Address } from './entities/address.entity';
+import { Address, CreateAddressDto } from './entities/address.entity';
 import {
   AddressList,
   CreateAddressListDto,
@@ -28,7 +28,7 @@ import {
   CreateQuestionnaireDto,
 } from './entities/questionnaire.entity';
 import { CreateQuestionDto, Question } from './entities/question.entity';
-import { Answer } from './entities/answer.entity';
+import { Answer, CreateAnswerDto } from './entities/answer.entity';
 import { User } from './entities/user.entity';
 import { UserRole } from './constants';
 import { PubSub } from 'graphql-subscriptions';
@@ -124,7 +124,7 @@ export class AppService {
   }
 
   // Find all organizations
-  // TODO: Paging. Guard access here or in controller?
+  // TODO: paging.
   async findOrganizations(): Promise<Organization[]> {
     return this.organizationsRepository.find();
   }
@@ -160,7 +160,7 @@ export class AppService {
   }
 
   // Find all address lists.
-  // TODO: Paging
+  // TODO: paging
   async findAddressLists(): Promise<AddressList[]> {
     return this.addressListsRepository.find();
   }
@@ -258,6 +258,120 @@ export class AppService {
   }
 
   // #endregion Questions CRUD
+
+  // #region Answers CRUD
+  // Create answer
+  async createAnswer(createAnswerDto: CreateAnswerDto): Promise<Answer> {
+    const answer = new Answer();
+    answer.text = createAnswerDto.text;
+    const question = await this.questionsRepository.findOneBy({
+      id: createAnswerDto.questionId,
+    });
+    if (!question) {
+      throw new NotFoundException(
+        `Question with ID ${createAnswerDto.questionId} not found`,
+      );
+    }
+    answer.question = question;
+    const user = await this.usersRepository.findOneBy({
+      id: createAnswerDto.userId,
+    });
+    if (!user) {
+      throw new NotFoundException(
+        `User with ID ${createAnswerDto.userId} not found`,
+      );
+    }
+    answer.user = user;
+
+    const addressList = await this.addressListsRepository.findOneBy({
+      id: createAnswerDto.addressListId,
+    });
+    if (!addressList) {
+      throw new NotFoundException(
+        `AddressList with ID ${createAnswerDto.addressListId} not found`,
+      );
+    }
+
+    answer.addressList = addressList;
+
+    const address = await this.addressesRepository.findOneBy({
+      id: createAnswerDto.addressId,
+    });
+
+    if (!address) {
+      throw new NotFoundException(
+        `Address with ID ${createAnswerDto.addressId} not found`,
+      );
+    }
+    answer.address = address;
+    // Leave this empty for admin created answers.
+    answer.inlineReferenceData = JSON.stringify({});
+
+    return this.answersRepository.save(answer);
+  }
+
+  // Delete answer
+  async deleteAnswer(id: number): Promise<void> {
+    await this.answersRepository.delete(id);
+  }
+
+  // Find all answers
+  // TODO paging
+  async findAnswers(): Promise<Answer[]> {
+    return this.answersRepository.find();
+  }
+
+  // Find answer by id
+  async findAnswer(id: number): Promise<Answer> {
+    const answer = await this.answersRepository.findOne({
+      where: { id: id },
+      relations: ['question', 'user', 'addressList', 'address'],
+    });
+    if (!answer) {
+      throw new NotFoundException(`Answer with ID ${id} not found`);
+    }
+    return answer;
+  }
+
+  //#endregion Answers CRUD
+
+  //#region Address CRUD
+  // Create address
+  async createAddress(createAddressDto: CreateAddressDto): Promise<Address> {
+    const address = new Address();
+    address.address1 = createAddressDto.address1;
+    address.address2 = createAddressDto.address2;
+    address.city = createAddressDto.city;
+    address.state = createAddressDto.state;
+    address.zipcode = createAddressDto.zipcode;
+
+    return this.addressesRepository.save(address);
+  }
+
+  // Delete address
+  async deleteAddress(id: number): Promise<void> {
+    await this.addressesRepository.delete(id);
+  }
+
+  // Find all addresses
+  // TODO: paging
+  async findAddresses(): Promise<Address[]> {
+    return this.addressesRepository.find();
+  }
+
+  // Find address by id
+  async findAddress(id: number): Promise<Address> {
+    const address = await this.addressesRepository.findOne({
+      where: { id: id },
+      relations: ['addressLists', 'addressLists.answers'],
+    });
+    if (!address) {
+      throw new NotFoundException(`Address with ID ${id} not found`);
+    }
+    return address;
+  }
+
+  //#endregion Address CRUD
 
   // #region Questions submit answers
 

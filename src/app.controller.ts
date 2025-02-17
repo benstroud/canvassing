@@ -36,8 +36,13 @@ import { CreateQuestionDto, Question } from './entities/question.entity';
 import { BEARER_AUTH_NAME, PUB_SUB, UserRole } from './constants';
 import { Roles } from './auth/roles.decorator';
 import { RolesGuard } from './auth/roles.guard';
-import { SubmitAnswerDto } from './entities/answer.entity';
+import {
+  Answer,
+  CreateAnswerDto,
+  SubmitAnswerDto,
+} from './entities/answer.entity';
 import { PubSub } from 'graphql-subscriptions';
+import { Address, CreateAddressDto } from './entities/address.entity';
 
 @Controller()
 export class AppController {
@@ -305,4 +310,91 @@ export class AppController {
   }
 
   //#endregion Questions admin CRUD controllers
+
+  //#region Answers admin CRUD controllers
+  // Create a new answer.
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('admin/answers')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Create a new answer.' })
+  createAnswer(@Body() createAnswerDto: CreateAnswerDto): Promise<Answer> {
+    return this.appService.createAnswer(createAnswerDto);
+  }
+
+  // Delete an answer.
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/answers/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Delete an answer.' })
+  deleteAnswer(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.appService.deleteAnswer(id);
+  }
+
+  // Get all answers.
+  // TODO paging
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/answers')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get all answers.' })
+  async findAnswers(): Promise<Answer[]> {
+    return this.appService.findAnswers();
+  }
+
+  // Get an answer by ID.
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/answers/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get an answer by ID.' })
+  async findAnswer(@Param('id', ParseIntPipe) id: number): Promise<Answer> {
+    return this.appService.findAnswer(id);
+  }
+
+  //#endregion Answers admin CRUD controllers
+
+  //#region Address admin CRUD controllers
+  // Create a new address.
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('admin/addresses')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Create a new address.' })
+  createAddress(@Body() createAddressDto: CreateAddressDto): Promise<Address> {
+    return this.appService.createAddress(createAddressDto);
+  }
+
+  // Delete an address.
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/addresses/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Delete an address.' })
+  deleteAddress(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.appService.deleteAddress(id);
+  }
+
+  // Get all addresses.
+  // TODO paging
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/addresses')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get all addresses.' })
+  async findAddresses(): Promise<Address[]> {
+    return this.appService.findAddresses();
+  }
+
+  // Get an address by ID.
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/addresses/:id')
+  @ApiBearerAuth(BEARER_AUTH_NAME)
+  @ApiOperation({ summary: 'Admin: Get an address by ID.' })
+  async findAddress(@Param('id', ParseIntPipe) id: number): Promise<Address> {
+    return this.appService.findAddress(id);
+  }
+  //#endregion
 }
